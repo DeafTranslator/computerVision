@@ -4,8 +4,8 @@ import glob
 import tools
 import numpy as np
 
-train_path ='C:\\Users\\Juan Graciano\\Desktop'
-save_path = 'C:\\Users\\Juan Graciano\\Desktop\\Nati videos\\juan\\numero2\\cropV3'
+train_path ='C:\\Users\\Juan Graciano\\Desktop\\Nati videos\\juan\\numero2\\canny'
+save_path = 'C:\\Users\\Juan Graciano\\Desktop\\Nati videos\\juan\\numero2\\merge'
 
 classesAlph = ['a','b','c','d','e','f','g','h','i','j','k','l','m','n','o','p','q','r','s','t','u','v','w','x','y','z']
 classesNum = ['0','1','2','3','4','5','6','7','8','9']
@@ -16,7 +16,7 @@ classes = classesNum
 frame = None
 # roiPts = [(205, 159),(346, 162),(347, 254),(230, 270)]
 roiPts = []
-inputMode = False
+inputMode = True
 
 def selectROI(event, x, y, flags, param):
     # grab the reference to the current frame, list of ROI
@@ -70,13 +70,13 @@ def readFolder():
             #     x0 = roiPts[0][0]
             #     x1 = roiPts[3][0]
                 
-            frame = tools.CropHand(frame)
-            # cv2.imshow("frame", frame)
+            frame = tools.mergeImage(frame.copy(), 400, 400)
+            cv2.imshow("frame", frame)
 
             if inputMode is False:
                 k = ord("i")
             else:
-                # tools.saveImage(name, frame.copy(), save_path, fld, 'tape')
+                tools.saveImage(name, frame.copy(), save_path, fld, 'merge')
                 k = cv2.waitKey(1)
 
             if k == ord("i"):
@@ -142,4 +142,4 @@ def readimage():
 
     print('Terminamo')
 
-readimage()
+readFolder()

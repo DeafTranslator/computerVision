@@ -4,8 +4,8 @@ import glob
 import tools
 import numpy as np
 
-train_path ='C:\\Users\\Juan Graciano\\Desktop'
-save_path = 'C:\\Users\\Juan Graciano\\Desktop\\Nati videos\\juan\\numero2\\cropV3'
+train_path ='C:\\Users\\Juan Graciano\\Desktop\\Nati videos\\juan\\numero2'
+save_path = 'C:\\Users\\Juan Graciano\\Desktop\\Nati videos\\juan\\numero2\\cropV1'
 
 classesAlph = ['a','b','c','d','e','f','g','h','i','j','k','l','m','n','o','p','q','r','s','t','u','v','w','x','y','z']
 classesNum = ['0','1','2','3','4','5','6','7','8','9']
@@ -14,7 +14,6 @@ classes = classesNum
 
 
 frame = None
-# roiPts = [(205, 159),(346, 162),(347, 254),(230, 270)]
 roiPts = []
 inputMode = False
 
@@ -29,18 +28,19 @@ def selectROI(event, x, y, flags, param):
     # and draw the circle
     if inputMode and event == cv2.EVENT_LBUTTONDOWN and len(roiPts) < 4:
         roiPts.append((x, y))
-        print("x: ", x)
-        print("y: ", y)
-        xmax = x*3
-        # xmax = frame.shape[1]-10
-        ymin = y-(y*0.3)
-        # ymin = 10
-        print("xmax: ", xmax)
-        print("ymin: ", ymin)
-        cv2.circle(frame, (x, y), 4, (0, 255, 0), 2)
-        cv2.circle(frame, (int(xmax), y), 4, (0, 255, 0), 2)
-        cv2.circle(frame, (x, int(ymin)), 4, (0, 255, 0), 2)
-        cv2.circle(frame, (int(xmax), int(ymin)), 4, (0, 255, 0), 2)
+        print("x min: ", x)
+        print("y max: ", y)
+        xmax = frame.shape[1]-10
+        ymin = 10
+        print("x max: ", xmax)
+        print("y min: ", ymin)
+
+        # Draw a square with circles in the corners
+        cv2.circle(frame, (x, y), 4, (0, 255, 0), 2) #Lower left corner
+        cv2.circle(frame, (int(xmax), y), 4, (0, 255, 0), 2) # Lower right corner
+        cv2.circle(frame, (x, int(ymin)), 4, (0, 255, 0), 2) # Upper left corner
+        cv2.circle(frame, (int(xmax), int(ymin)), 4, (0, 255, 0), 2) # Upper right corner
+
         roiPts.append((int(xmax), y))
         roiPts.append((x, int(ymin)))
         roiPts.append((int(xmax), int(ymin)))
@@ -61,22 +61,21 @@ def readFolder():
         for fl in files:
             frame = cv2.imread(fl)
             name = os.path.basename(fl)
-            # frame = tools.resize(frame, 711, 400)
-        
+            # frame = tools.resize(frame, 900, 506)
+
+            if inputMode is not False:
+                y0 = roiPts[3][1]
+                y1 = roiPts[0][1]
+                x0 = roiPts[0][0]
+                x1 = roiPts[3][0]
+                frame = tools.detectTape(frame[int(y0):int(y1), int(x0):int(x1)])
             
-            # if inputMode is not False:
-            #     y0 = roiPts[3][1]
-            #     y1 = roiPts[0][1]
-            #     x0 = roiPts[0][0]
-            #     x1 = roiPts[3][0]
-                
-            frame = tools.CropHand(frame)
             # cv2.imshow("frame", frame)
 
             if inputMode is False:
                 k = ord("i")
             else:
-                # tools.saveImage(name, frame.copy(), save_path, fld, 'tape')
+                tools.saveImage(name, frame.copy(), save_path, fld, 'Tapecrop')
                 k = cv2.waitKey(1)
 
             if k == ord("i"):
@@ -97,49 +96,31 @@ def readFolder():
     print('Terminamo')
 
 def readimage():
-    global frame, roiPts, inputMode
-    cv2.namedWindow("frame")
-    cv2.setMouseCallback("frame", selectROI)
-    roiBox =  None
     print('Reading images')
     path = os.path.join(train_path, '*g')
     files = glob.glob(path)
     for fl in files:
         frame = cv2.imread(fl)
         name = os.path.basename(fl)
-        frame = tools.resize(frame, 400, 711)
-        
-        if inputMode is not False:
-            y0 = roiPts[3][1]
-            y1 = roiPts[0][1]
-            x0 = roiPts[0][0]
-            x1 = roiPts[3][0]
-            # frame = tools.detectTape(frame[y0:y1, x0:x1])
-            frame = cv2.Canny(frame[y0:y1, x0:x1], 100, 255)
+        # frame = resize(frame, 400, 600)
+        gray = cv2.cvtColor(frame.copy(), cv2.COLOR_BGR2GRAY)
+        img = frame.copy()
+        aux = frame.copy()
 
-        cv2.imshow("frame", frame)
+        # nueva = orb(gray, frame)
+        nueva, x, y, w, h = circlePoint(img)
+        # nueva = circlePoint(img)
 
-        if inputMode is False:
-            k = ord("i")
-        else:
-            # tools.saveImage(name, frame.copy(), save_path, fld, 'tape')
-            k = cv2.waitKey(0)
+        corte = cropImage2(nueva, x, y, w, h)
+        # cv2.imshow("nuevas", corte)
 
-        if k == ord("i"):
-            inputMode = True
-            orig = frame.copy()
+        saveImage(name, corte)
 
-            while len(roiPts) < 4:
-                cv2.imshow("frame", frame)
-                cv2.waitKey(0)
-                
-        elif k == ord("q"):
-            break
-        else :
-            pass
-        if k == ord("q"):
-            break
+        # cv2.waitKey(0)
+        # k += 1
+        # if k > 100:
+        #     break
 
     print('Terminamo')
 
-readimage()
+readFolder()
