@@ -5,170 +5,19 @@ import tools
 import numpy as np
 import math
 
-train_path ='C:\\Users\\Juan Graciano\\Desktop\\d'
-save_path = 'C:\\Users\\Juan Graciano\\Desktop\\d\\saved'
-
-classesAlph = ['a','b','c','d','e','f','g','h','i','j','k','l','m','n','o','p','q','r','s','t','u','v','w','x','y','z']
-classesNum = ['0','1','2','3','4','5','6','7','8','9']
-
-classes = classesNum
-
 
 frame = None
-cantPoint = 7
-roiPts = [(172, 315), (203, 314), (177, 285), (210, 287), (183, 256), (218, 254), (205, 228)]
+# roiPts = [(172, 315), (203, 314), (177, 285), (210, 287), (183, 256), (218, 254), (205, 228)]
 roiPts = [(106, 288), (176, 278), (216, 232), (148, 253), (111, 227), (172, 188), (169, 134)]
 inputMode = False
 
 kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE,(3,3))
 fgbg = cv2.createBackgroundSubtractorMOG2()
 
-def selectROI(event, x, y, flags, param):
-    # grab the reference to the current frame, list of ROI
-    # points and whether or not it is ROI selection mode
-    global frame, roiPts, inputMode
-
-    # if we are in ROI selection mode, the mouse was clicked,
-    # and we do not already have four points, then update the
-    # list of ROI points with the (x, y) location of the click
-    # and draw the circle
-    if inputMode and event == cv2.EVENT_LBUTTONDOWN and len(roiPts) < cantPoint:
-        roiPts.append((x, y))
-        print("x: ", x)
-        print("y: ", y)
-
-        xmax = x + frame.shape[1]*0.045
-        ymax = y + frame.shape[0]*0.045
-        
-        print("xmax: ", xmax)
-        print("ymax: ", ymax)
-
-        cv2.rectangle(frame, (x,y), (int(xmax), int(ymax) ), (0,0,255),2)
-        font = cv2.FONT_HERSHEY_SIMPLEX
-        cv2.putText(frame, str((len(roiPts))),(int(x), int(y)), font, 1,(255,255,255),2)
-
-        i = 0
-        if len(roiPts) >cantPoint-1:
-          while(i < cantPoint):
-            xmax = roiPts[i][0] + frame.shape[1]*0.045
-            ymax = roiPts[i][1] + frame.shape[0]*0.045
-            cv2.rectangle(frame, roiPts[i], (int(xmax), int(ymax) ), (0,255,0),2)
-            cv2.putText(frame, 'Press any key',(int(frame.shape[1]*0.35), int(frame.shape[0]*0.2)), font, 1,(0,255,0),3)
-            i += 1
-        cv2.imshow("frame", frame)
-
 k = 0
-def readFolder():
-    global frame, roiPts, inputMode
-    cv2.namedWindow("frame")
-    cv2.setMouseCallback("frame", selectROI)
-    roiBox =  None
-    print('Reading image')
-    for fld in classes:   # assuming data directory has a separate folder for each class, and that each folder is named after the class
-        index = classes.index(fld)
-        print('Loading {} files (Index: {})'.format(fld, index))
-        path = os.path.join(train_path, fld,'*g')
-        files = glob.glob(path)
-        for fl in files:
-            frame = cv2.imread(fl)
-            name = os.path.basename(fl)
-            # frame = tools.resize(frame, 711, 400)
-        
-            
-            # if inputMode is not False:
-            #     y0 = roiPts[3][1]
-            #     y1 = roiPts[0][1]
-            #     x0 = roiPts[0][0]
-            #     x1 = roiPts[3][0]
-                
-            frame = tools.CropHand(frame)
-            # cv2.imshow("frame", frame)
-
-            if inputMode is False:
-                k = ord("i")
-            else:
-                # tools.saveImage(name, frame.copy(), save_path, fld, 'tape')
-                k = cv2.waitKey(1)
-
-            if k == ord("i"):
-                inputMode = True
-                orig = frame.copy()
-
-                while len(roiPts) < 4:
-                    cv2.imshow("frame", frame)
-                    cv2.waitKey(0)
-                    
-            elif k == ord("q"):
-                break
-            else :
-                pass
-        if k == ord("q"):
-            break
-
-    print('Terminamo')
-
-def readimage():
-    global frame, roiPts, inputMode
-    cv2.namedWindow("frame")
-    cv2.setMouseCallback("frame", selectROI)
-    roiBox =  None
-    print('Reading images')
-    path = os.path.join(train_path, '*g')
-    files = glob.glob(path)
-    for fl in files:
-        frame = cv2.imread(fl)
-        name = os.path.basename(fl)
-        frame = tools.resize(frame, 400, 711)
-        
-        # if inputMode is not False:
-        #     y0 = roiPts[3][1]
-        #     y1 = roiPts[0][1]
-        #     x0 = roiPts[0][0]
-        #     x1 = roiPts[3][0]
-        #     # frame = tools.detectTape(frame[y0:y1, x0:x1])
-        # frame = cv2.Canny(frame, 100, 255)
-        hsv = cv2.cvtColor(frame.copy(), cv2.COLOR_BGR2HSV)
-        gray = cv2.cvtColor(hsv, cv2.COLOR_BGR2GRAY)
-        value = (5, 5)
-        blurred = cv2.GaussianBlur(gray.copy(), value, 0)
-        # thresh1 = cv2.adaptiveThreshold(gray, 100, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY, 115, 1)
-        _, thresh2 = cv2.threshold(gray, 115, 255, cv2.THRESH_BINARY_INV+cv2.THRESH_OTSU)
-
-        cv2.imshow("frame", hsv)
-        cv2.imshow("gray", gray)
-        cv2.imshow("thresh2", thresh2)
-
-
-        if inputMode is False:
-            k = ord("i")
-        else:
-            # tools.saveImage(name, frame.copy(), save_path, fld, 'tape')
-            k = cv2.waitKey(0)
-
-        if k == ord("i"):
-            inputMode = True
-            orig = frame.copy()
-
-            while len(roiPts) < 4:
-                cv2.imshow("frames", frame)
-                cv2.waitKey(0)
-                
-        elif k == ord("q"):
-            break
-        else :
-            pass
-        if k == ord("q"):
-            break
-
-    print('Terminamo')
-
 def readVideo():
-  global frame, roiPts, inputMode
-  cv2.namedWindow("frame")
-  cv2.setMouseCallback("frame", selectROI)
-  roiBox =  None
+  global frame, roiPts
   cap = cv2.VideoCapture(0)
-  k = ord("n")
   vainita = False
   time = 20
   begin = False
@@ -178,7 +27,6 @@ def readVideo():
   fingerTips = []
   while( cap.isOpened() ) :
       ret,frame = cap.read()
-      # frame = tools.resize(frame, 400, 711)
 
       hsv = cv2.cvtColor(frame.copy(), cv2.COLOR_BGR2HLS)
 
@@ -206,7 +54,7 @@ def readVideo():
         res = cv2.bitwise_and(frame, frame, mask= output)
         median = cv2.medianBlur(output,7)
         
-        ####
+        ###############################################################
         # makeContours
         image, contours, hierarchy = cv2.findContours(median, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_NONE)
         cIdx = tools.findBiggestContour(contours)
