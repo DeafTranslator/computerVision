@@ -3,8 +3,201 @@ import math
 import cv2
 import numpy as np
 import argparse
+import random
+# import imutils
 
 
+def distanceP2P(a,b):
+    return math.sqrt(math.fabs(math.pow((a[0][0]-b[0][0]),2) + math.pow((a[0][1]-b[0][1]),2)))  
+
+def getAngle(s, f, e):
+    l1 = distanceP2P(f,s)
+    l2 = distanceP2P(f,e)
+    dot = (s[0][0]-f[0][0])*(e[0][0]-f[0][0]) + (s[0][1]-f[0][1])*(e[0][1]-f[0][1])
+    angle = math.acos(dot/(l1*l2))
+    angle = angle*180/math.pi
+    return angle
+
+def removeRedundantEndPoints(newDefects, median, bRect, contours):
+    tolerance = bRect[2]/6
+    startidx, endidx, faridx = (0, 0, 0)
+    startidx2, endidx2 = (0, 0)
+    thisContours = -1
+    for i in range(0, len(newDefects)):
+        for j in range(0, len(newDefects)):
+            startidx = newDefects[i][0]
+            ptStart = contours[startidx] 
+            endidx = newDefects[i][1]
+            ptEnd = contours[endidx]
+            startidx2 = newDefects[j][0] 
+            ptStart2 = contours[startidx2]
+            endidx2 = newDefects[j][1]
+            ptEnd2 = contours[endidx2]
+            if(distanceP2P(ptStart,ptEnd2) < tolerance ):
+                thisContours = ptEnd2
+                break
+            if(distanceP2P(ptEnd,ptStart2) < tolerance ):
+                thisContours = ptEnd
+
+    return thisContours, startidx2
+   
+def detectIfHand(bRect, fingerTips):
+    h = bRect[3]
+    w = bRect[2]
+    isHand = True
+    if len(fingerTips) > 5:
+        isHand = False
+    elif h == 0 or w == 0 :
+        isHand = False
+    elif h/w > 4 or w/h > 4:
+        isHand = False   
+    elif(bRect[0] < 20):
+        isHand = False  
+    
+    return isHand
+
+def eleminateDefects(median, bRect, defects, contours, cIdx):
+    tolerance = bRect[3]/5
+    angleTol = 95
+    newDefects = []
+    startidx, endidx, faridx = (0, 0, 0) # No se
+  
+    for d in defects[cIdx]: #Cambio
+      v = d[0]
+      startidx = v[0]
+      ptStart = contours[startidx]
+      endidx = v[1]
+      ptEnd = contours[endidx]
+      faridx = v[2] 
+      ptFar = contours[faridx]
+
+      if distanceP2P(ptStart, ptFar) > tolerance and distanceP2P(ptEnd, ptFar) > tolerance and getAngle(ptStart, ptFar, ptEnd) < tolerance:
+        if ptEnd[0][1] > (bRect[1] + bRect[3] - bRect[3]/4):
+          pass
+        elif ptStart[0][1] > (bRect[1] + bRect[3] -bRect[3]/4 ):
+          pass
+        else:
+            newDefects.append(v) 
+
+    if len(newDefects)>0:
+        # print(newDefects)
+        # print(newDefects[0])
+        nrOfDefects = len(newDefects[0])
+        # print("nrOfDefects", nrOfDefects)
+        # print("\n\n")
+        temp = defects[cIdx]
+        defects[cIdx] = newDefects[0]
+        newDefects = temp
+        cStart, start = removeRedundantEndPoints(defects, median, bRect, contours)
+        if len(cStart) >= 0:
+            contours[start] = cStart
+    return contours, defects[cIdx]
+
+def checkForOneFinger(median, bRect, defects, hullP, fingerTips, contours):
+    yTol = bRect[3]/6
+    highestP = median.shape
+
+    for d in contours:
+        v = d
+        if v[0][0] < highestP[0]:
+            highestP = v[0]
+        d += 1 
+    
+    n = 0
+    for d in hullP:
+        v = d
+        if v[0][1] < (highestP[0] + yTol) and v[0][1] is not highestP[0] and v[0][0] is not highestP[1]:
+            n += 1
+              
+    if n == 0:
+        fingerTips.append(highestP)
+
+    return fingerTips
+
+def getFingerTips(fingerTips, contours, defects, median, bRect, hullP):
+    fingerTips = []
+    i = 0
+    for d in defects:
+        print("\n que tiene d", d)
+        v = d[0]
+
+        startidx = v[0]
+        ptStart = contours[startidx]
+        endidx = v[1]
+        ptEnd = contours[endidx]
+        faridx = v[2] 
+        ptFar = contours[faridx] 
+        if i == 0:
+            fingerTips.append(ptStart)
+            i += 1
+        fingerTips.append(ptEnd);
+        i += 1
+
+    if len(fingerTips) == 0:
+        print("fingerTips es igual a ccero", fingerTips)
+        fingerTips = checkForOneFinger(median, bRect, defects, hullP, fingerTips, contours)
+
+    return fingerTips
+
+def myDrawContours(frame, defects, hullP, cIdx, bRect, output, contours):
+    # cv2.drawContours(frame, hullP, cIdx, (0, 255, 0), 2)
+    cv2.drawContours(frame, hullP, cIdx, (200,0,0), 2, 8)
+
+    cv2.rectangle(frame,(bRect[0], bRect[1]),(bRect[2], bRect[3]), (0,0,200)) 
+    d = 0
+    
+    fontFace = cv2.FONT_HERSHEY_PLAIN;
+    channels = []
+    result = np.array([])
+    i = 0
+    while i < 3:
+        channels.append(output)
+        i += 1         
+    
+    channels = np.array(channels)
+    # print(channels)
+    cv2.imshow("mostrar", output)
+    cv2.waitKey(0)
+    cv2.merge(channels, result)
+    # drawContours(result,hg->contours,hg->cIdx,cv::Scalar(0,200,0),6, 8, vector<Vec4i>(), 0, Point());
+    cv2.drawContours(result, hullP, cIdx, (0,0,250), 10, 8)
+
+        
+    while d < len(defects):
+        v = defects[d]
+        startidx = v[0] 
+        ptStart = contours[startidx] 
+        endidx = v[1] 
+        ptEnd = contours[endidx] 
+        faridx = v[2]
+        ptFar = contours[faridx]
+        depth = (v[3] / 256)
+        """
+        line( m->src, ptStart, ptFar, Scalar(0,255,0), 1 )
+        line( m->src, ptEnd, ptFar, Scalar(0,255,0), 1 )
+        circle( m->src, ptFar,   4, Scalar(0,255,0), 2 )
+        circle( m->src, ptEnd,   4, Scalar(0,0,255), 2 )
+        circle( m->src, ptStart,   4, Scalar(255,0,0), 2 )
+        """
+        cv2.circle(result, ptFar, 9, [0,205,0], 5 )
+
+        d += 1
+
+    cv2.imwrite("./contour_defects_before_eliminate.jpg",result)
+    
+    return result
+
+def drawFingerTips(fingerTips, frame):
+    for i in range(len(fingerTips)):
+        p = fingerTips[i][0]
+
+        font = cv2.FONT_HERSHEY_SIMPLEX
+        cv2.putText(frame, str(i),(p[1], p[0]), font, 1,(200,200,200),2)
+        cv2.circle(frame, (p[1], p[0]), 5, (100,255,100), 4)
+
+        return frame
+
+# ===============================================================
 def resize(img, w, h):
     return cv2.resize(img, (w, h), interpolation = cv2.INTER_CUBIC)
 
@@ -85,10 +278,29 @@ def changeSize(img, w, h):
     return cv2.resize(img, (w, h), interpolation = cv2.INTER_CUBIC)
 
 def rotateImage(frame, grade):
-    rows,cols = frame.shape
-    M = cv2.getRotationMatrix2D((cols/2,rows/2),grade,1)
-    dst = cv2.warpAffine(frame,M,(cols,rows))
+    # print(frame.shape)
+    rows,cols = frame.shape[:2]
+
+    M = cv2.getRotationMatrix2D((cols/2,rows/2), grade, 1)
+
+    cos = np.abs(M[0, 0])
+    sin = np.abs(M[0, 1])
+
+    # compute the new bounding dimensions of the image
+    nW = int((rows * sin) + (cols * cos))
+    nH = int((rows * cos) + (cols * sin))
+
+    # adjust the rotation matrix to take into account translation
+    M[0, 2] += (nW / 2) - (cols/2)
+    M[1, 2] += (nH / 2) - (rows/2)
+
+    dst = cv2.warpAffine(frame, M, (nW,nH), flags=cv2.INTER_LINEAR)
     return dst
+
+def rotate(image, angle):
+    rotated = imutils.rotate_bound(image, angle)
+    # cv2.imshow("Rotated (Correct)", rotated)
+    return rotated
 
 def selectROI(event, x, y, flags, param):
     # grab the reference to the current frame, list of ROI
@@ -127,7 +339,7 @@ def dimensions(frame):
     # determine the top-left and bottom-right points
     roiPts = np.array(roiPts)
     s = roiPts.sum(axis = 1)
-    print(s)
+    # print(s)
     tl = roiPts[np.argmin(s)]
     br = roiPts[np.argmax(s)]
 
@@ -268,9 +480,9 @@ def circlePoint(frame):
 
     x0Real = optimalAvg-int((endHand)/2)+1
     x1Real = optimalAvg+int((endHand)/2)-1
-    print("average ", optimalAvg)
-    print("min ", x0Real)
-    print("max ", x1Real)
+    # print("average ", optimalAvg)
+    # print("min ", x0Real)
+    # print("max ", x1Real)
     # cv2.circle(frame, (int(optimalAvg), int(endHand/2)), 5, [0, 255, 255], 10) #amarillo
     if x0Real >= 0 and x1Real <= frame.shape[1]:
         # cv2.rectangle(frame, (int(x0Real), 0), (int(x1Real), frame.shape[0]-1), (255, 0, 0), 3)
@@ -362,22 +574,24 @@ def detectTape(frame):
     bottomHand = thresh1.shape[1]
     findHand = False
 
-    # while(c < thresh1.shape[0]):
-    #     r = 0
-    #     tape = True
-    #     while(r < thresh1.shape[1]):     
-    #         if thresh1[c][r] != 255:
-    #             findHand = True
-    #             tape = False
-    #             # cv2.circle(frame, (int(r), int(c)), 5, [0, 255, 255], 10) #amarillo
-    #         r += 1
-    #     if tape == True and findHand == True:
-    #         bottomHand = c
-    #         break
-    #     c += 1
+    while(c < thresh1.shape[0]):
+        r = 0
+        tape = True
+        while(r < thresh1.shape[1]):     
+            if thresh1[c][r] != 255:
+                findHand = True
+                tape = False
+                # cv2.circle(frame, (int(r), int(c)), 5, [0, 255, 255], 10) #amarillo
+            r += 1
+        if tape == True and findHand == True:
+            bottomHand = c
+            break
+        c += 1
         
-    return frame
-    return frame[0:bottomHand-1, 0:frame.shape[1]-1]
+    if (bottomHand + 2) <= frame.shape[0]:
+        bottomHand = bottomHand + 2
+    # return frame
+    return frame[0:bottomHand, 0:frame.shape[1]-1]
 
 def semiCropImage(frame): 
 
@@ -435,7 +649,7 @@ def semiCropImage(frame):
 
     return frame[0:frame.shape[0]-1, int(x0Real):int(x1Real)]
 
-def CropHand(frame): 
+def cropHand(frame): 
 
     # Converting image to black and white
     grey = cv2.cvtColor(frame.copy(), cv2.COLOR_BGR2GRAY)
@@ -443,12 +657,10 @@ def CropHand(frame):
     thresh1 = cv2.erode(thresh1, None, iterations=2)
     thresh1 = cv2.dilate(thresh1, None, iterations=2)
 
-    # cv2.imshow("thresh1", thresh1)
+    cv2.imshow("thresh1", thresh1)
 
-    # shape [0] means the y-axis
-    # shape [1] means the x-axis
     c = 0
-    leftHand = thresh1.shape[0]
+    leftHand = thresh1.shape[1]
     rightHand = 0
     bottomHand = thresh1.shape[1]
     topHand = thresh1.shape[0]
@@ -482,12 +694,7 @@ def CropHand(frame):
     # return frame
 
 def mergeImage(frame, width, height):
-
-    # Example of how to adjust the image size
-    # height = 400
-    # hy = 508 (height/508) = 0.79
-    # wx = 338 (0.79*338) = 266
-    # image (400, 226) 
+ 
     print("Original", frame.shape)
 
     # Adjusting size
@@ -504,15 +711,207 @@ def mergeImage(frame, width, height):
     
     # Mask
     merge = np.zeros((int(width), int(height), 3))
-    
-
-    # Aligning images
+    # Make white mask
+    # merge.fill(255)
+    # cv2.imshow("merge", merge)
+    # Putting the image in the middle
     centerMerge = width / 2
     centerFrame = frame.shape[1] / 2
     x_offset = centerMerge - centerFrame
     y_offset = height - frame.shape[0]
 
+
+    # Random positions
+    # x_offset = width - frame.shape[1]
+    # y0 = random.randint(0, int(y_offset))
+    # x0 = random.randint(0, int(x_offset))
+    
     # Merge
     merge[int(y_offset):int(y_offset+frame.shape[0]), int(x_offset):int(x_offset+frame.shape[1])] = frame
+    # Random merge
+    # merge[int(y0):int(y0+frame.shape[0]), int(x0):int(x0+frame.shape[1])] = frame
 
     return merge
+
+def forceSize(frame, height):
+    # Adjusting size
+    if frame.shape[0] is not height:
+        hy = height / frame.shape[0]
+        hx = frame.shape[1] * (hy)
+        frame = cv2.resize(frame, (int(hx), int(height)), interpolation = cv2.INTER_CUBIC)
+        print("Change y", frame.shape)
+
+    return frame
+
+def normalize(mean, std, isLower):
+    if isLower:
+         if mean-std < 0:
+            return 0
+
+    if mean+std > 255:
+        return 255 
+
+def averageColors(frame, roiPts):  
+    lower_bounds = []
+    upper_bounds = []
+
+    for roi in roiPts:
+        # Dimensiones de cuadro en la pantalla
+        xmax = int((roi[0] + frame.shape[1]*0.025)-2)
+        ymax = int((roi[1] + frame.shape[0]*0.035)-2)
+        xmin = int((roi[0])+2)
+        ymin = int((roi[1])+2)
+
+        # Image del cuadro en la pantalla
+        color1 = frame[ymin:ymax, xmin:xmax, 0]
+        color2 = frame[ymin:ymax, xmin:xmax, 1]
+        color3 = frame[ymin:ymax, xmin:xmax, 2]
+
+        # color1 = np.reshape(color1, (1,np.product(color1.shape)))
+        # color2 = np.reshape(color2, (1,np.product(color2.shape)))
+        # color3 = np.reshape(color3, (1,np.product(color3.shape)))
+
+        # Colocar la imagen de NxN dimensiones en una sola dimension N^2
+        color1 = color1.reshape(-1)
+        color2 = color2.reshape(-1)
+        color3 = color3.reshape(-1)
+
+        # Promedio de color para cada canal de la imagen
+        meanColor1 = np.average(color1)
+        meanColor2 = np.average(color2)
+        meanColor3 = np.average(color3)
+
+        # Desviacion estandar de la imagen
+        # if stdColor1 < np.std(color1, ddof=1):
+        stdColor1 = np.std(color1)
+        # if stdColor2 < np.std(color2, ddof=1):
+        stdColor2 = np.std(color2)
+        # if stdColor3 < np.std(color3, ddof=1):
+        stdColor3 = np.std(color3)
+
+        lower_bounds.append([int(meanColor1-(stdColor1)), int(meanColor2-(stdColor2)), int(meanColor3-(stdColor3))])
+        upper_bounds.append([int(meanColor1+(stdColor1)), int(meanColor2+(stdColor2)), int(meanColor3+(stdColor3))])
+    
+    return (lower_bounds, upper_bounds)
+
+def boundsColor(frame, roiPts):
+    lowerBound, upperBound = averageColors(frame, roiPts)
+
+    i = 0
+    while i < len(roiPts):
+        if (lowerBound[i][0]) < 0:
+            lowerBound[i][0] = 0
+
+        if (lowerBound[i][1]) < 0:
+            lowerBound[i][1] = 0
+
+        if (lowerBound[i][2]) < 0:
+            lowerBound[i][2] = 0
+
+        if (upperBound[i][0]) > 255:
+            upperBound[i][0] = 255
+
+        if (upperBound[i][1]) > 255:
+            upperBound[i][1] = 255
+
+        if (upperBound[i][2]) > 255:
+            upperBound[i][2] = 255
+
+        i += 1
+
+    return (lowerBound, upperBound)
+
+def mergeColorsImage(frame, lowerBound, upperBound):
+    i = 0 
+    output = []
+    bw = []
+    numIterations = len(lowerBound)
+    numElements = len(lowerBound[0])
+
+    while i < numIterations:
+        j = 0
+        mask = output 
+        while j < numElements:
+            if i == 0:
+                mask = cv2.inRange(frame, lowerBound[i][j], upperBound[i][j])
+                bw = mask
+            else:
+                mask += cv2.inRange(frame, lowerBound[i][j], upperBound[i][j])
+            output = mask 
+            # cv2.imshow("filtro ", lola)
+            # cv2.waitKey(0)
+            # cv2.imshow("filtro ", mask)
+            j += 1
+        i += 1
+
+    return output, bw
+
+def drawRectangle(frame, roiPts):
+    i = 0
+    cantPoint = 7
+    # font de la letra
+    font = cv2.FONT_HERSHEY_SIMPLEX
+    if len(roiPts) > cantPoint-1:
+        # Poner texto en la pantalla
+        cv2.putText(frame, 'Press D',(int(frame.shape[1]*0.35), int(frame.shape[0]*0.2)), font, 1,(0,255,0),3)
+        # Colocar los cuadros en la pantalla para captua de colores
+        while(i < len(roiPts)):
+            xmax = roiPts[i][0] + frame.shape[1]*0.045
+            ymax = roiPts[i][1] + frame.shape[0]*0.045
+            cv2.rectangle(frame, roiPts[i], (int(xmax), int(ymax) ), (0,255,0),2)
+            i += 1
+
+    return frame
+
+def findBiggestContour(contours):
+    indexOfBiggestContour = 1
+    sizeOfBiggestContour = 0
+    i = 0
+    while i < len(contours):
+        if len(contours[i]) > sizeOfBiggestContour:
+            sizeOfBiggestContour = len(contours[i])
+            indexOfBiggestContour = i
+        i += 1
+
+    return indexOfBiggestContour
+
+
+########################IMPORTANTE#########################################
+# Video
+# # cascPath = "C:\\Users\\Juan Graciano\\Desktop\\Proyecto\\dasar_haartrain\\myhaar2.xml"
+# cascPath = "C:\\Users\\Juan Graciano\\Desktop\\Proyecto\\handDetection\\hand.xml"
+# cap = cv2.VideoCapture(0)
+# while(cap.isOpened()):
+#     # read image
+#     ret, img = cap.read()
+#     faceCascade = cv2.CascadeClassifier(cascPath)
+#     edges = cv2.Canny(img, 100, 255)
+#     gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+#     gray = cv2.equalizeHist(gray)
+#     # Detect faces in the image
+#     faces = faceCascade.detectMultiScale(
+#       gray,
+#       scaleFactor=1.1,
+#       minNeighbors=3,
+#       minSize=(5, 5),
+#       flags = 0
+#   )
+    
+#     extXY = 30
+#     extWH = 30
+#   # Draw a rectangle around the faces
+#     for (x, y, w, h) in faces:
+#         if y-extXY < 0 or x-extXY < 0:
+#             extXY = 0
+
+#         crop = img[y-extXY:y+h+extWH, x-extXY:x+w+extWH]
+#         #cv2.imwrite(str(i)+'.png', crop)
+#         #cv2.imshow("Crop found", crop)
+#         #cv2.waitKey(0)
+#         cv2.rectangle(img, (x, y), (x+w, y+h), (0, 255, 0), 2)
+#         break
+
+#     cv2.imshow("images", img)
+#     k = cv2.waitKey(10)
+#     if k == 27:
+#       break
