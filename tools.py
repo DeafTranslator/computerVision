@@ -210,8 +210,8 @@ def saveImage(name, img, save_path, letra, alias):
     createFolder(letra, save_path)
 
     name = name.split('.')
-    print(save_path + '\\' + letra + '\\' + name[0] + '-'+alias+'.png')
-    cv2.imwrite(save_path + '\\' + letra + '\\' + name[0] + '-'+alias+'.png', img)
+    print(save_path + '\\' + letra + '\\' + name[0] +"-"+alias+'.png')
+    cv2.imwrite(save_path + '\\' + letra + '\\' + name[0] +"-"+alias+'.png', img)
 
 def drawCircle(contours, frame):
     cnt = max(contours, key=lambda x: cv2.contourArea(x))
@@ -514,6 +514,51 @@ def circlePoint(frame):
     # x-int(h/5.5), y-int(y/20), x+h-int(h/3.5), y+h
     return frame[0:endHand-10, int(x0Real):int(x1Real)]
 
+def drawCircle(contours, frame):
+    cnt = max(contours, key = lambda x: cv2.contourArea(x))
+    # create bounding rectangle around the contour (can skip below two lines)
+    x, y, w, h = cv2.boundingRect(cnt)
+
+    # finding convex hull
+    hull = cv2.convexHull(cnt)
+
+    # finding convex hull
+    hull = cv2.convexHull(cnt, returnPoints=False)
+
+    # finding convexity defects
+    defects = cv2.convexityDefects(cnt, hull)
+    count_defects = 0
+    # cv2.drawContours(thresh1, contours, -1, (0, 255, 0), 3)
+
+    # applying Cosine Rule to find angle for all defects (between fingers)
+    # with angle > 90 degrees and ignore defects
+    for i in range(defects.shape[0]):
+        s,e,f,d = defects[i,0]
+
+        start = tuple(cnt[s][0])
+        end = tuple(cnt[e][0])
+        far = tuple(cnt[f][0])
+
+        # find length of all sides of triangle
+        a = math.sqrt((end[0] - start[0])**2 + (end[1] - start[1])**2)
+        b = math.sqrt((far[0] - start[0])**2 + (far[1] - start[1])**2)
+        c = math.sqrt((end[0] - far[0])**2 + (end[1] - far[1])**2)
+
+        # apply cosine rule here
+        angle = math.acos((b**2 + c**2 - a**2)/(2*b*c)) * 57
+
+        # ignore angles > 90 and highlight rest with red dots
+        if angle <= 90:
+            count_defects += 1
+            cv2.circle(frame, far, 1, [0,0,255], -1)
+        #dist = cv2.pointPolygonTest(cnt,far,True)
+
+        # draw a line from start to end i.e. the convex points (finger tips)
+        # (can skip this part)
+        cv2.circle(frame,far,5,[0,0,255],-1)
+        return frame
+
+
 def orb(gray, frame):
     orb = cv2.ORB_create()
     keypoints = orb.detect(gray, None)
@@ -712,8 +757,9 @@ def mergeImage(frame, width, height):
     # Mask
     merge = np.zeros((int(width), int(height), 3))
     # Make white mask
-    # merge.fill(255)
+    merge.fill(255)
     # cv2.imshow("merge", merge)
+    
     # Putting the image in the middle
     centerMerge = width / 2
     centerFrame = frame.shape[1] / 2
@@ -796,35 +842,11 @@ def averageColors(frame, roiPts):
 
 def boundsColor(frame, roiPts):
     lowerBound, upperBound = averageColors(frame, roiPts)
-
-    i = 0
-    while i < len(roiPts):
-        if (lowerBound[i][0]) < 0:
-            lowerBound[i][0] = 0
-
-        if (lowerBound[i][1]) < 0:
-            lowerBound[i][1] = 0
-
-        if (lowerBound[i][2]) < 0:
-            lowerBound[i][2] = 0
-
-        if (upperBound[i][0]) > 255:
-            upperBound[i][0] = 255
-
-        if (upperBound[i][1]) > 255:
-            upperBound[i][1] = 255
-
-        if (upperBound[i][2]) > 255:
-            upperBound[i][2] = 255
-
-        i += 1
-
     return (lowerBound, upperBound)
 
 def mergeColorsImage(frame, lowerBound, upperBound):
     i = 0 
     output = []
-    bw = []
     numIterations = len(lowerBound)
     numElements = len(lowerBound[0])
 
@@ -834,17 +856,14 @@ def mergeColorsImage(frame, lowerBound, upperBound):
         while j < numElements:
             if i == 0:
                 mask = cv2.inRange(frame, lowerBound[i][j], upperBound[i][j])
-                bw = mask
             else:
                 mask += cv2.inRange(frame, lowerBound[i][j], upperBound[i][j])
             output = mask 
-            # cv2.imshow("filtro ", lola)
-            # cv2.waitKey(0)
-            # cv2.imshow("filtro ", mask)
+
             j += 1
         i += 1
 
-    return output, bw
+    return output
 
 def drawRectangle(frame, roiPts):
     i = 0

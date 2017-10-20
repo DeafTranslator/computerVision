@@ -11,9 +11,6 @@ frame = None
 roiPts = [(106, 288), (176, 278), (216, 232), (148, 253), (111, 227), (172, 188), (169, 134)]
 inputMode = False
 
-kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE,(3,3))
-fgbg = cv2.createBackgroundSubtractorMOG2()
-
 k = 0
 def readVideo():
   global frame, roiPts
@@ -21,12 +18,17 @@ def readVideo():
   vainita = False
   time = 20
   begin = False
-
+  k = ord("p")
   lower = []
   upper = []
   fingerTips = []
   while( cap.isOpened() ) :
       ret,frame = cap.read()
+      gray = cv2.cvtColor(frame.copy(), cv2.COLOR_BGR2GRAY)
+      fdifetente = cv2.threshold(gray,127,255,cv2.THRESH_BINARY)
+      # print(fdifetente)
+      cv2.imshow("ress",fdifetente[1])
+
 
       hsv = cv2.cvtColor(frame.copy(), cv2.COLOR_BGR2HLS)
 
@@ -50,7 +52,7 @@ def readVideo():
       if vainita:
         blurFrame = cv2.blur(frame.copy(),(5,5))
         hsvB = cv2.cvtColor(blurFrame, cv2.COLOR_BGR2HLS)
-        output, bw = tools.mergeColorsImage(hsvB, lower, upper)
+        output = tools.mergeColorsImage(hsvB, lower, upper)
         res = cv2.bitwise_and(frame, frame, mask= output)
         median = cv2.medianBlur(output,7)
         
@@ -64,54 +66,63 @@ def readVideo():
 
         if cIdx is not -1:
           bRect = cv2.boundingRect(contours[cIdx])
+          prueba = frame.copy()
+          cv2.rectangle(frame,(bRect[0],bRect[1]),(bRect[0]+bRect[2],bRect[1]+bRect[3]),(0,255,0),2)
+          # cv2.rectangle(prueba, (bRect[1], bRect[0]), (bRect[3], bRect[2]), (0,255,255),2)
+          # cv2.imshow("prueba", prueba)
 
           hullP[cIdx] = cv2.convexHull(contours[cIdx],returnPoints=True)
           hullI[cIdx] = cv2.convexHull(contours[cIdx],returnPoints=False)
           hullP[cIdx] = cv2.approxPolyDP(contours[cIdx],18,True)
-         
+          # cv2.drawContours(prueba, hullP[cIdx], -1, (255, 0, 255), 3)
+          # cv2.drawContours(prueba, contours[cIdx], -1, (255, 255, 0), 3)
+          # cv2.imshow("prueba", prueba)
           if len(contours[cIdx]) > 3:
-            # hull = cv2.convexHull(contours[cIdx], returnPoints=False)
             defects[cIdx] = cv2.convexityDefects(contours[cIdx], hullI[cIdx])
-            contours[cIdx], defects[cIdx] = tools.eleminateDefects(median, bRect, defects, contours[cIdx], cIdx)
-            # print(defects)
-            # count_defects = 0
-            # for i in range(defects.shape[0]):
-            #   print("ggggggggg", defects[i])
-            #   s = defects[i, 0][0]
-            #   e = defects[i, 0][1]
-            #   f = defects[i, 0][2]
-            #   d = defects[i, 0][3]
-            #   print(contours[cIdx].shape)
-            #   start = tuple(contours[cIdx][s][0])
-            #   end = tuple(contours[cIdx][e][0])
-            #   far = tuple(contours[cIdx][f][0])
+            # print(defects[cIdx][0,0])
+            # start = tuple(contours[cIdx][defects[cIdx][0,0][0]][0])
+            # print(start)
+            # break
+            # contours[cIdx], defects[cIdx] = tools.eleminateDefects(median, bRect, defects, contours[cIdx], cIdx)
+            print(defects)
+            count_defects = 0
+            for i in range(defects[cIdx].shape[0]):
+              print("ggggggggg", defects[cIdx][i])
+              s = defects[cIdx][i, 0][0]
+              e = defects[cIdx][i, 0][1]
+              f = defects[cIdx][i, 0][2]
+              d = defects[cIdx][i, 0][3]
+              print(contours[cIdx].shape)
+              start = tuple(contours[cIdx][s][0])
+              end = tuple(contours[cIdx][e][0])
+              far = tuple(contours[cIdx][f][0])
 
-            #   # find length of all sides of triangle
-            #   a = math.sqrt((end[0] - start[0])**2 + (end[1] - start[1])**2)
-            #   b = math.sqrt((far[0] - start[0])**2 + (far[1] - start[1])**2)
-            #   c = math.sqrt((end[0] - far[0])**2 + (end[1] - far[1])**2)
+              # find length of all sides of triangle
+              a = math.sqrt((end[0] - start[0])**2 + (end[1] - start[1])**2)
+              b = math.sqrt((far[0] - start[0])**2 + (far[1] - start[1])**2)
+              c = math.sqrt((end[0] - far[0])**2 + (end[1] - far[1])**2)
 
-            #   # apply cosine rule here
-            #   angle = math.acos((b**2 + c**2 - a**2) / (2 * b * c)) * 57
+              # apply cosine rule here
+              angle = math.acos((b**2 + c**2 - a**2) / (2 * b * c)) * 57
 
-            #   # ignore angles > 90 and highlight rest with red dots
-            #   if angle <= 90:
-            #       count_defects += 1
-            #       cv2.circle(frame, far, 1, [0, 0, 255], 3)
-            #   # dist = cv2.pointPolygonTest(cnt,far,True)
+              # ignore angles > 90 and highlight rest with red dots
+              if angle <= 90:
+                  count_defects += 1
+                  cv2.circle(frame, far, 1, [0, 0, 255], 3)
+              # dist = cv2.pointPolygonTest(cnt,far,True)
 
-            #   # draw a line from start to end i.e. the convex points (finger tips)
-            #   # (can skip this part)
-            #   cv2.circle(frame, end, 5, [255, 255, 0], 3)
+              # draw a line from start to end i.e. the convex points (finger tips)
+              # (can skip this part)
+              cv2.circle(frame, end, 5, [255, 255, 0], 3)
 
-          isHand = tools.detectIfHand(bRect, fingerTips)
+        #   isHand = tools.detectIfHand(bRect, fingerTips)
 
-          print("isHand", isHand)
+        #   print("isHand", isHand)
 
-          if isHand: 
-            fingerTips = tools.getFingerTips(fingerTips, contours[cIdx], defects[cIdx], median, bRect, hullP[cIdx])
-          #   frame = tools.drawFingerTips(fingerTips, frame)
-          #   frame = tools.myDrawContours(frame, defects, hullP, cIdx, bRect, output, contours[cIdx])
+        #   if isHand: 
+        #     fingerTips = tools.getFingerTips(fingerTips, contours[cIdx], defects[cIdx], median, bRect, hullP[cIdx])
+        #   #   frame = tools.drawFingerTips(fingerTips, frame)
+        #   #   frame = tools.myDrawContours(frame, defects, hullP, cIdx, bRect, output, contours[cIdx])
 
         cv2.imshow("res",res)
         cv2.imshow("output ", median)
