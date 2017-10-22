@@ -2,15 +2,15 @@ import cv2
 import os
 import glob
 
-train_path = 'C:\\Users\\Juan Graciano\\Desktop\\pepegrillo\\alpha_newSCrop\\selectwithFlip'
-save_path = 'C:\\Users\\Juan Graciano\\Desktop\\pepegrillo\\alpha_canny_WB_M\\flip'
+train_path = 'C:\\Users\\jgraciano\\Desktop\\Dataset\\imagenes\\20-10-2017\\Jorge\\cropHand'
+save_path = 'C:\\Users\\jgraciano\\Desktop\\Dataset\\imagenes\\20-10-2017\\Jorge\\cropHand'
 save_path = train_path
 
 classesAll = ['0','1','2','3','4','5','6','7','8','9','a','b','c','d','e','f','g','h','i','j','k','l','m','n','o','p','q','r','s','t','u','v','w','x','y','z']
 classesAlph = ['a','b','c','d','e','f','g','h','i','j','k','l','m','n','o','p','q','r','s','t','u','v','w','x','y','z']
 classesNum = ['0','1','2','3','4','5','6','7','8','9']
 especial = ['test']
-classes = classesAlph
+classes = ['g', 'h', 'p', 'q']
 
 print('Reading image')
 for fld in classes:   # assuming data directory has a separate folder for each class, and that each folder is named after the class

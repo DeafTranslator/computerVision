@@ -1,8 +1,9 @@
 import os
 
-save_path = 'C:\\Users\\Juan Graciano\\Desktop\\pepegrillo\\alpha'
+save_path = 'C:\\Users\\jgraciano\\Desktop\\Dataset\\videos\\20-10-2017\\Jorge'
 
 folders = ['a','b','c','d','e','f','g','h','i','j','k','l','m','n','o','p','q','r','s','t','u','v','w','x','y','z']
+folders = ['testNohup']
 
 print('Reading image')
 for fld in folders:   

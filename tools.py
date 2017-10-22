@@ -206,12 +206,14 @@ def createFolder(letra, save_path):
         os.makedirs(save_path + '\\' + letra)
         print('Folder "', letra, '"created')
 
-def saveImage(name, img, save_path, letra, alias):
+def saveImage(name, img, save_path, letra, alias = ''):
     createFolder(letra, save_path)
 
     name = name.split('.')
-    print(save_path + '\\' + letra + '\\' + name[0] +"-"+alias+'.png')
-    cv2.imwrite(save_path + '\\' + letra + '\\' + name[0] +"-"+alias+'.png', img)
+    if alias is not '':
+        alias = '-' + alias
+    print(save_path + '\\' + letra + '\\' + name[0] +alias+'.png')
+    cv2.imwrite(save_path + '\\' + letra + '\\' + name[0] +alias+'.png', img)
 
 def drawCircle(contours, frame):
     cnt = max(contours, key=lambda x: cv2.contourArea(x))
@@ -761,9 +763,7 @@ def mergeImage(frame, width, height):
     # cv2.imshow("merge", merge)
     
     # Putting the image in the middle
-    centerMerge = width / 2
-    centerFrame = frame.shape[1] / 2
-    x_offset = centerMerge - centerFrame
+    x_offset = (width - frame.shape[1])/2
     y_offset = height - frame.shape[0]
 
 
@@ -773,7 +773,9 @@ def mergeImage(frame, width, height):
     # x0 = random.randint(0, int(x_offset))
     
     # Merge
-    merge[int(y_offset):int(y_offset+frame.shape[0]), int(x_offset):int(x_offset+frame.shape[1])] = frame
+    merge[:,:, 0][int(y_offset):int(y_offset+frame.shape[0]), int(x_offset):int(x_offset+frame.shape[1])] = frame
+    merge[:,:, 1][int(y_offset):int(y_offset+frame.shape[0]), int(x_offset):int(x_offset+frame.shape[1])] = frame
+    merge[:,:, 2][int(y_offset):int(y_offset+frame.shape[0]), int(x_offset):int(x_offset+frame.shape[1])] = frame
     # Random merge
     # merge[int(y0):int(y0+frame.shape[0]), int(x0):int(x0+frame.shape[1])] = frame
 
@@ -781,13 +783,23 @@ def mergeImage(frame, width, height):
 
 def forceSize(frame, height):
     # Adjusting size
-    if frame.shape[0] is not height:
-        hy = height / frame.shape[0]
-        hx = frame.shape[1] * (hy)
-        frame = cv2.resize(frame, (int(hx), int(height)), interpolation = cv2.INTER_CUBIC)
-        print("Change y", frame.shape)
-
+    if frame.shape[0] > frame.shape[1]:
+        if frame.shape[0] is not height:
+            hy = height / frame.shape[0]
+            hx = frame.shape[1] * (hy)
+            frame = cv2.resize(frame, (int(hx), int(height)), interpolation = cv2.INTER_CUBIC)
+            print("Change y", frame.shape)
+    else:
+        if frame.shape[1] is not height:
+            hy = height / frame.shape[1]
+            hx = frame.shape[0] * (hy)
+            frame = cv2.resize(frame, (int(height), int(hx)), interpolation = cv2.INTER_CUBIC)
+            print("Change y", frame.shape)
+        
     return frame
+
+
+    
 
 def normalize(mean, std, isLower):
     if isLower:

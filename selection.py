@@ -6,8 +6,8 @@ import numpy as np
 import random
 import shutil
 
-train_path ='C:\\Users\\Juan Graciano\\Desktop\\pepegrillo\\alpha_newSCrop'
-save_path = 'C:\\Users\\Juan Graciano\\Desktop\\pepegrillo\\alpha_newSCrop\\selectwithFlip'
+train_path ='C:\\Users\\jgraciano\\Desktop\\Dataset\\imagenes\\20-10-2017\\allPhoto'
+save_path = 'C:\\Users\\jgraciano\\Desktop\\Dataset\\imagenes\\20-10-2017\\train'
 
 classesAlph = ['a','b','c','d','e','f','g','h','i','j','k','l','m','n','o','p','q','r','s','t','u','v','w','x','y','z']
 classesNum = ['0','1','2','3','4','5','6','7','8','9']
@@ -45,7 +45,7 @@ def readFolder():
         ids = np.array(ids)
 
         # Population samples
-        population = 109
+        population = 580
         if len(ids) < population:
             population = len(ids)
 

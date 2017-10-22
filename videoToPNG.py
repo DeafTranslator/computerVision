@@ -5,8 +5,8 @@ import tools
 import numpy as np
 
 
-train_path = 'C:\\Users\\Juan Graciano\\Desktop\\pepegrillo'
-save_path =  'C:\\Users\\Juan Graciano\\Desktop\\pepegrillo\\abc'
+train_path = 'C:\\Users\\jgraciano\\Desktop\\Dataset\\videos\\20-10-2017\\Jorge'
+save_path =  'C:\\Users\\jgraciano\\Desktop\\Dataset\\imagenes\\20-10-2017\\Jorge'
 
 
 classesAlph = ['a','b','c','d','e','f','g','h','i','j','k','l','m','n','o','p','q','r','s','t','u','v','w','x','y','z']
@@ -52,11 +52,11 @@ def readVideo(video, fld):
         if ret is not True:
             break
         
-        # rotated = rotate_bound(frame, 90)
+        rotated = rotate_bound(frame, 90)
         if i % 60:
-            cv2.imshow("frame", frame)
-            # name = fld + '_' + str(i)
-            # tools.saveImage(name, frame.copy(), save_path, fld, '')
+            cv2.imshow("frame", rotated)
+            name = fld + '_' + str(i)
+            tools.saveImage(name, rotated.copy(), save_path, fld, '')
         
         i += 1
 
