@@ -4,12 +4,14 @@ import glob
 import tools
 import numpy as np
 
-train_path = 'C:\\Users\\jgraciano\\Desktop\\Dataset\\imagenes\\20-10-2017\\Jorge'
-save_path =  'C:\\Users\\jgraciano\\Desktop\\Dataset\\imagenes\\20-10-2017\\Jorge\\simpleCrop'
+train_path = 'C:\\Users\\jgraciano\\Desktop\\Dataset\\imagenes\\2-11-2017\\Jesus'
+save_path =  'C:\\Users\\jgraciano\\Desktop\\Dataset\\imagenes\\2-11-2017\\Jesus\\simpleCrop'
 
 classesAlph = ['a','b','c','d','e','f','g','h','i','j','k','l','m','n','o','p','q','r','s','t','u','v','w','x','y','z']
 classesNum = ['0','1','2','3','4','5','6','7','8','9']
-classes = classesAlph
+classesAll = ['0','1','2','3','4','5','6','7','8','9','a','b','c','d','e','f','g','h','i','j','k','l','m','n','o','p','q','r','s','t','u','v','w','x','y','z']
+classesDinamic = ['nombre']
+classes = classesDinamic
 
 frame = None
 roiPts = []
@@ -29,8 +31,8 @@ def selectROI(event, x, y, flags, param):
         print("x: ", x)
         print("y: ", y)
 
-        xmax = x + frame.shape[1]*0.75
-        ymin = y + frame.shape[0]*0.35
+        xmax = x + min(frame.shape[1], frame.shape[1]*1)
+        ymin = y + min(frame.shape[0], frame.shape[0]*0.75)
 
         print("xmax: ", xmax)
         print("ymin: ", ymin)
@@ -71,7 +73,7 @@ def readFolder():
             if inputMode is False:
                 k = ord("i")
             else:
-                tools.saveImage(name, frame.copy(), save_path, fld, 'sc')
+                tools.saveImage(name, frame.copy(), save_path, fld, '')
                 k = cv2.waitKey(1)
 
             if k == ord("i"):

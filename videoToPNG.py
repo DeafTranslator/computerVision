@@ -1,3 +1,12 @@
+# Convierte videos mp4 a imagenes png.
+# Pasos para usar el programa:
+# 1. Insertar el path de la carpeta donde esta el video en 'video_path'. 
+#    Ej: carpeta "letras" tiene las carpetas "a" y "b" y dentro de esta carpeta estan los videos
+# 2. Insertar el path de la carpeta donde se guardaran las imagenes del video en 'save_path'.
+# 3. Poner dentro de un arreglo el nombre de la carpeta donde esta el video y asignarlo a 'classes'.
+#    Siguiendo el ejemplo serian las carpetas "a" y "b"
+# 4. Escriba en la consola python videoToPNG o python3 videoToPNG para ejecutar el codigo. 
+
 import cv2
 import os
 import glob
@@ -5,16 +14,16 @@ import tools
 import numpy as np
 
 
-train_path = 'C:\\Users\\jgraciano\\Desktop\\Dataset\\videos\\20-10-2017\\Jorge'
-save_path =  'C:\\Users\\jgraciano\\Desktop\\Dataset\\imagenes\\20-10-2017\\Jorge'
-
+video_path = 'C:\\Users\\jgraciano\\Desktop\\Dataset\\videos\\2-11-2017\\Jesus'
+save_path =  'C:\\Users\\jgraciano\\Desktop\\Dataset\\imagenes\\2-11-2017\\Jesus'
 
 classesAlph = ['a','b','c','d','e','f','g','h','i','j','k','l','m','n','o','p','q','r','s','t','u','v','w','x','y','z']
 classesNum = ['0','1','2','3','4','5','6','7','8','9']
-classes = classesAlph
+classesAll = ['2','3','4','5','6','7','8','9','a','b','c','d','e','f','g','h','i','j','k','l','m','n','o','p','q','r','s','t','u','v','w','x','y','z']
+classesDinamic = ['nombre']
+classes = classesDinamic
 
 frame = None
-# 30
 
 k = 0
 
@@ -72,7 +81,7 @@ def readFolder():
     for fld in classes:   # assuming data directory has a separate folder for each class, and that each folder is named after the class
         index = classes.index(fld)
         print('Loading {} files (Index: {})'.format(fld, index))
-        path = os.path.join(train_path, fld,'*mp4')
+        path = os.path.join(video_path, fld,'*mp4')
         files = glob.glob(path)
         for fl in files:
             readVideo(fl, fld)

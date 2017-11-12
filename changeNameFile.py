@@ -1,10 +1,13 @@
 import os
 import glob
 
-train_path = 'C:\\Users\\jgraciano\\Desktop\\Dataset\\imagenes\\20-10-2017\\Samuel\\canny_WB'
+train_path = 'C:\\Users\\jgraciano\\Desktop\\Dataset\\imagenes\\3-11-2017\\juan'
+
+classesAlph = ['a','b','c','d','e','f','g','h','i','j','k','l','m','n','o','p','q','r','s','t','u','v','w','x','y','z']
 classesNum = ['0','1','2','3','4','5','6','7','8','9']
-folders = ['a','b','c','d','e','f','g','h','i','j','k','l','m','n','o','p','q','r','s','t','u','v','w','x','y','z']
-# folders= ['0','1','2','3','4','5','6','7','8','9']
+classesDinamic = ['nombre']
+
+folders = classesAlph
 
 for fld in folders:
     index = folders.index(fld)
@@ -16,7 +19,7 @@ for fld in folders:
     for fl in files:
     	name = os.path.basename(fl)
     	name = name.split('.png', 1)
-    	print(train_path + '\\' + fld + '\\'+ name[0] +'-s.png')
-    	os.rename(fl, train_path + '\\' + fld + '\\'+ name[0] +'-s.png')
+    	print(train_path + '\\' + fld + '\\'+ fld + '_' + str(counter)+'_Juan.png')
+    	os.rename(fl, train_path + '\\' + fld + '\\'+ fld + '_' + str(counter)+'_Juan.png')
     	counter +=1
 print('Done!')

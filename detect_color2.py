@@ -7,7 +7,6 @@ import math
 
 
 frame = None
-# roiPts = [(172, 315), (203, 314), (177, 285), (210, 287), (183, 256), (218, 254), (205, 228)]
 roiPts = [(106, 288), (176, 278), (216, 232), (148, 253), (111, 227), (172, 188), (169, 134)]
 inputMode = False
 
@@ -87,7 +86,6 @@ def readVideo():
             print(defects)
             count_defects = 0
             for i in range(defects[cIdx].shape[0]):
-              print("ggggggggg", defects[cIdx][i])
               s = defects[cIdx][i, 0][0]
               e = defects[cIdx][i, 0][1]
               f = defects[cIdx][i, 0][2]

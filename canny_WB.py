@@ -4,13 +4,16 @@ import glob
 import tools
 import numpy as np
 
-train_path = 'C:\\Users\\jgraciano\\Desktop\\Dataset\\imagenes\\20-10-2017\\Samuel\\cropHand'
-save_path =  'C:\\Users\\jgraciano\\Desktop\\Dataset\\imagenes\\20-10-2017\\Samuel\\canny_WB'
+train_path = 'C:\\Users\\jgraciano\\Desktop\\Dataset\\imagenes\\2-11-2017\\Jesus\\simpleCrop'
+save_path =  'C:\\Users\\jgraciano\\Desktop\\Dataset\\imagenes\\2-11-2017\\Jesus\\canny_WB'
 
 
 classesAlph = ['a','b','c','d','e','f','g','h','i','j','k','l','m','n','o','p','q','r','s','t','u','v','w','x','y','z']
 classesNum = ['0','1','2','3','4','5','6','7','8','9']
-classes = ['g', 'h', 'p', 'q']
+classesAll = ['0','1','2','3','4','5','6','7','8','9','a','b','c','d','e','f','g','h','i','j','k','l','m','n','o','p','q','r','s','t','u','v','w','x','y','z']
+# classes = ['d','e','f','k','n','o','r','t','u','v','w','x','y']
+classesDinamic = ['nombre']
+classes = classesDinamic
 
 frame = None
 
@@ -84,25 +87,17 @@ def readFolder():
 
 
 
-
-
-
-
-
-
-
-
             #################
             gray = cv2.cvtColor(frame.copy(), cv2.COLOR_BGR2GRAY)
-            value = (35, 35)
+            value = (33, 33)
             blurred = cv2.GaussianBlur(gray, value, 0)
-            myThreshBinaryInv = cv2.threshold(blurred,70,255,cv2.THRESH_BINARY_INV)
+            myThreshBinaryInv = cv2.threshold(blurred, 80,255,cv2.THRESH_BINARY)
             
             # Canny
-            myCanny = cv2.Canny(gray.copy(), 70, 200)
+            myCanny = cv2.Canny(gray.copy(), 90, 240)
 
             # cv2.imshow("myCanny", myCanny)
-            # cv2.imshow("myThreshBinaryInv", myThreshBinaryInv[1])
+            cv2.imshow("myThreshBinaryInv", myThreshBinaryInv[1])
             # Merge canny and threshold
             out = myThreshBinaryInv[1] + myCanny
             # cv2.imshow("out", out)
@@ -111,8 +106,8 @@ def readFolder():
             frame = tools.mergeImage(out, 334, 334)
             
             cv2.imshow("frame", frame)
-            tools.saveImage(name, frame.copy(), save_path, fld, 'CWB')
-            k = cv2.waitKey(1)
+            # tools.saveImage(name, frame.copy(), save_path, fld, 'CWB')
+            k = cv2.waitKey(0)
                     
             if k == ord("q"):
                 break

@@ -764,7 +764,7 @@ def mergeImage(frame, width, height):
     
     # Putting the image in the middle
     x_offset = (width - frame.shape[1])/2
-    y_offset = height - frame.shape[0]
+    y_offset = (height - frame.shape[0])/2
 
 
     # Random positions
