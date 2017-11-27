@@ -14,13 +14,14 @@ import tools
 import numpy as np
 
 
-video_path = 'C:\\Users\\jgraciano\\Desktop\\Dataset\\videos\\2-11-2017\\Jesus'
-save_path =  'C:\\Users\\jgraciano\\Desktop\\Dataset\\imagenes\\2-11-2017\\Jesus'
+video_path = 'C:\\Users\\jgraciano\\Desktop\\Dataset\\videos\\25-11-2017\\Juan\\prueba'
+save_path =  'C:\\Users\\jgraciano\\Desktop\\Dataset\\imagenes\\25-11-2017\\Juan\\prueba'
 
 classesAlph = ['a','b','c','d','e','f','g','h','i','j','k','l','m','n','o','p','q','r','s','t','u','v','w','x','y','z']
 classesNum = ['0','1','2','3','4','5','6','7','8','9']
 classesAll = ['2','3','4','5','6','7','8','9','a','b','c','d','e','f','g','h','i','j','k','l','m','n','o','p','q','r','s','t','u','v','w','x','y','z']
-classesDinamic = ['nombre']
+classesDinamic = ['tu', 'nombre', 'como']
+classesDinamic = ['CJESUS']
 classes = classesDinamic
 
 frame = None
@@ -60,11 +61,11 @@ def readVideo(video, fld):
 
         if ret is not True:
             break
-        
-        rotated = rotate_bound(frame, 90)
+        frame = tools.resize(frame, 700, 450)
+        rotated = rotate_bound(frame, 0)
         if i % 60:
             cv2.imshow("frame", rotated)
-            name = fld + '_' + str(i)
+            name = 'prueba_' +fld + '_' + str(i)
             tools.saveImage(name, rotated.copy(), save_path, fld, '')
         
         i += 1

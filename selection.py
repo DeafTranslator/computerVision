@@ -6,13 +6,13 @@ import numpy as np
 import random
 import shutil
 
-train_path ='C:\\Users\\jgraciano\\Desktop\\Dataset\\imagenes\\3-11-2017'
-save_path = 'C:\\Users\\jgraciano\\Desktop\\Dataset\\imagenes\\3-11-2017\\train'
+train_path ='C:\\Users\\jgraciano\\Desktop\\Dataset\\imagenes\\18-11-2017'
+save_path = 'C:\\Users\\jgraciano\\Desktop\\Dataset\\imagenes\\18-11-2017\\seleccion'
 
 classesAlph = ['a','b','c','d','e','f','g','h','i','j','k','l','m','n','o','p','q','r','s','t','u','v','w','x','y','z']
 classesNum = ['0','1','2','3','4','5','6','7','8','9']
 
-classes = classesAlph
+classes = classesNum
 
 frame = None
 k = 0
@@ -45,7 +45,7 @@ def readFolder():
         ids = np.array(ids)
 
         # Population samples
-        population = 1320
+        population = 1400
         if len(ids) < population:
             population = len(ids)
 

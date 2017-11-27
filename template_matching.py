@@ -102,44 +102,8 @@ def drawContour(frame):
         widthMerge = hand2.shape[1]+hand1.shape[1]+1
         merge = np.zeros((int(heightMerge), int(widthMerge), 3))
 
-        # if xs < xs2:
-        #     # for channel in range(1,3):
-        #     merge[int(heightMerge-(hs+masb+menot)):int(heightMerge), 0:int(ws+menol+masr)] = hand1
-        #     merge[int(heightMerge-(hs2+masb2+menot2)):int(heightMerge), int(ws+menol+masr)+1:int(widthMerge)]=hand2
-        # else:
-        #     # for channel in range(1,3):
-        #     merge[int(heightMerge-(hs2+masb2+menot2)):int(heightMerge), 0:int(ws2+menol2+masr2)] = hand2
-        #     merge[int(heightMerge-(hs+masb+menot)):int(heightMerge), int(ws2+menol2+masr2)+1:int(widthMerge)] = hand1
-
-        # cv2.imshow("contorno2", hand2)
-        # cv2.imshow("merge", merge)
-
-        # cv2.waitKey(0)
         return merge, hand1, hand2
 
-def rotate_bound(image, angle):
-    # grab the dimensions of the image and then determine the
-    # center
-    (h, w) = image.shape[:2]
-    (cX, cY) = (w // 2, h // 2)
- 
-    # grab the rotation matrix (applying the negative of the
-    # angle to rotate clockwise), then grab the sine and cosine
-    # (i.e., the rotation components of the matrix)
-    M = cv2.getRotationMatrix2D((cX, cY), -angle, 1.0)
-    cos = np.abs(M[0, 0])
-    sin = np.abs(M[0, 1])
- 
-    # compute the new bounding dimensions of the image
-    nW = int((h * sin) + (w * cos))
-    nH = int((h * cos) + (w * sin))
- 
-    # adjust the rotation matrix to take into account translation
-    M[0, 2] += (nW / 2) - cX
-    M[1, 2] += (nH / 2) - cY
- 
-    # perform the actual rotation and return the image
-    return cv2.warpAffine(image, M, (nW, nH))
 
 def readVideo(video, fld):
     global frame
@@ -152,7 +116,7 @@ def readVideo(video, fld):
         if ret is not True:
             break
         
-        rotated = rotate_bound(frame, 90)
+        rotated = tools.rotate_bound(frame, 90)
         image = rotated.copy()
         # rotated = tools.resize(rotated, 450, 700)
         if i % 2:
@@ -169,54 +133,6 @@ def readVideo(video, fld):
 
             found = None
 
-            # for scale in np.linspace(0.2, 1.0, 20)[::-1]:
-            #     # resize the image according to the scale, and keep track
-            #     # of the ratio of the resizing
-            #     widthImage = img_gray.shape[1] * scale
-            #     wx = widthImage / img_gray.shape[1]
-            #     heightImage = img_gray.shape[0] * wx
-            #     resized = tools.resize(rotated, int(widthImage), int(heightImage))
-            #     # resized = cv2.resize(img_gray.copy(), int(img_gray.shape[1] * scale), img_gray.shape[0])
-            #     r = img_gray.shape[1] / float(resized.shape[1])
-         
-            #     # if the resized image is smaller than the template, then break
-            #     # from the loop
-            #     if resized.shape[0] < h or resized.shape[1] < w:
-            #         break
-
-            #     # detect edges in the resized, grayscale image and apply template
-            #     # matching to find the template in the image
-            #     edged = cv2.Canny(resized, 50, 200)
-            #     result = cv2.matchTemplate(edged, template, cv2.TM_CCOEFF)
-            #     (_, maxVal, _, maxLoc) = cv2.minMaxLoc(result)
-         
-            #     # check to see if the iteration should be visualized
-            #     # if args.get("visualize", False):
-            #         # draw a bounding box around the detected region
-            #     clone = np.dstack([edged, edged, edged])
-            #     cv2.rectangle(clone, (maxLoc[0], maxLoc[1]),
-            #         (maxLoc[0] + w, maxLoc[1] + h), (0, 0, 255), 2)
-            #     cv2.imshow("Visualize", clone)
-            #     # cv2.waitKey(0)
-         
-            #     # if we have found a new maximum correlation value, then ipdate
-            #     # the bookkeeping variable
-            #     if found is None or maxVal > found[0]:
-            #         found = (maxVal, maxLoc, r)
-         
-            # # unpack the bookkeeping varaible and compute the (x, y) coordinates
-            # # of the bounding box based on the resized ratio
-            # (_, maxLoc, r) = found
-            # (startX, startY) = (int(maxLoc[0] * r), int(maxLoc[1] * r))
-            # (endX, endY) = (int((maxLoc[0] + w) * r), int((maxLoc[1] + h) * r))
-         
-            # # draw a bounding box around the detected result and display the image
-            # cv2.rectangle(image, (startX, startY), (endX, endY), (0, 0, 255), 2)
-            # cv2.imshow("Image", image)
-            # # cv2.waitKey(0)
-
-
-
             for pt in zip(*loc[::-1]):
 
                 template2 = rotated.copy()[pt[1]:(pt[1] + h+30), pt[0]:(pt[0] + w+30)]
@@ -231,7 +147,6 @@ def readVideo(video, fld):
                     newTemplate = True
                     template = cv2.cvtColor(template2, cv2.COLOR_BGR2GRAY)
                     print("despues", template.shape)
-                # else:
                 break
 
             cv2.imshow('Detected',rotated)

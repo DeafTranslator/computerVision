@@ -759,7 +759,7 @@ def mergeImage(frame, width, height):
     # Mask
     merge = np.zeros((int(width), int(height), 3))
     # Make white mask
-    merge.fill(255)
+    # merge.fill(255)
     # cv2.imshow("merge", merge)
     
     # Putting the image in the middle
@@ -772,6 +772,7 @@ def mergeImage(frame, width, height):
     # y0 = random.randint(0, int(y_offset))
     # x0 = random.randint(0, int(x_offset))
     
+    # merge[int(y_offset):int(y_offset+frame.shape[0]), int(x_offset):int(x_offset+frame.shape[1])] = frame
     # Merge
     merge[:,:, 0][int(y_offset):int(y_offset+frame.shape[0]), int(x_offset):int(x_offset+frame.shape[1])] = frame
     merge[:,:, 1][int(y_offset):int(y_offset+frame.shape[0]), int(x_offset):int(x_offset+frame.shape[1])] = frame
@@ -861,34 +862,43 @@ def mergeColorsImage(frame, lowerBound, upperBound):
     output = []
     numIterations = len(lowerBound)
     numElements = len(lowerBound[0])
-
+    promLower = 0
+    promUpper = 0
     while i < numIterations:
         j = 0
         mask = output 
         while j < numElements:
             if i == 0:
                 mask = cv2.inRange(frame, lowerBound[i][j], upperBound[i][j])
+                promLower= lowerBound[i][j]
+                promUpper = upperBound[i][j]
             else:
+                print(promLower-lowerBound[i][j])
+                promLower = (promLower + lowerBound[i][j])/2
+                promUpper = (promLower + upperBound[i][j])/2
                 mask += cv2.inRange(frame, lowerBound[i][j], upperBound[i][j])
             output = mask 
 
             j += 1
         i += 1
-
-    return output
+    # lower = np.array([5.9, 69.6, 84.9], dtype = "uint8")
+    # upper = np.array([7.9, 113.8, 125.4], dtype = "uint8")
+    # output = cv2.inRange(frame, lower, upper)
+    # return output, [5.9, 69.6, 84.9], [7.9, 113.8, 125.4]
+    return output, promLower, promUpper
 
 def drawRectangle(frame, roiPts):
     i = 0
-    cantPoint = 7
+    cantPoint = 10
     # font de la letra
     font = cv2.FONT_HERSHEY_SIMPLEX
-    if len(roiPts) > cantPoint-1:
+    if len(roiPts) > len(roiPts)-1:
         # Poner texto en la pantalla
         cv2.putText(frame, 'Press D',(int(frame.shape[1]*0.35), int(frame.shape[0]*0.2)), font, 1,(0,255,0),3)
         # Colocar los cuadros en la pantalla para captua de colores
         while(i < len(roiPts)):
-            xmax = roiPts[i][0] + frame.shape[1]*0.045
-            ymax = roiPts[i][1] + frame.shape[0]*0.045
+            xmax = roiPts[i][0] + frame.shape[1]*0.02
+            ymax = roiPts[i][1] + frame.shape[0]*0.02
             cv2.rectangle(frame, roiPts[i], (int(xmax), int(ymax) ), (0,255,0),2)
             i += 1
 
@@ -905,6 +915,20 @@ def findBiggestContour(contours):
         i += 1
 
     return indexOfBiggestContour
+
+def findHighContour(contours, frameWB):
+    indexOfHighContour = 1
+    i = 0
+    yMax = frameWB.shape[0]
+    while i < len(contours):
+        (x,y,w,h) = cv2.boundingRect(contours[i])
+        if yMax > y:
+          yMax = y
+          indexOfHighContour = i
+        i += 1
+
+    return indexOfHighContour
+
 
 
 ########################IMPORTANTE#########################################
@@ -946,3 +970,27 @@ def findBiggestContour(contours):
 #     k = cv2.waitKey(10)
 #     if k == 27:
 #       break
+
+def rotate_bound(image, angle):
+    # grab the dimensions of the image and then determine the
+    # center
+    (h, w) = image.shape[:2]
+    (cX, cY) = (w // 2, h // 2)
+ 
+    # grab the rotation matrix (applying the negative of the
+    # angle to rotate clockwise), then grab the sine and cosine
+    # (i.e., the rotation components of the matrix)
+    M = cv2.getRotationMatrix2D((cX, cY), -angle, 1.0)
+    cos = np.abs(M[0, 0])
+    sin = np.abs(M[0, 1])
+ 
+    # compute the new bounding dimensions of the image
+    nW = int((h * sin) + (w * cos))
+    nH = int((h * cos) + (w * sin))
+ 
+    # adjust the rotation matrix to take into account translation
+    M[0, 2] += (nW / 2) - cX
+    M[1, 2] += (nH / 2) - cY
+ 
+    # perform the actual rotation and return the image
+    return cv2.warpAffine(image, M, (nW, nH))
