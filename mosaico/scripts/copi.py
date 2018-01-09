@@ -5,16 +5,14 @@ import tools
 import numpy as np
 import math
 
-senia = 'prueba'
-
-train_path = 'C:\\Users\\jgraciano\\Desktop\\Dataset\\imagenes\\25-11-2017\\Juan\\' + senia
-video_path = 'C:\\Users\\jgraciano\\Desktop\\Dataset\\videos\\25-11-2017\\Juan\\' + senia
-save_path =  'C:\\Users\\jgraciano\\Desktop\\Dataset\\imagenes\\25-11-2017\\Juan\\'+senia+'\\rgb'
+train_path = 'C:\\Users\\jgraciano\\Desktop\\Dataset\\imagenes\\28-11-2017'
+video_path = 'C:\\Users\\jgraciano\\Desktop\\Dataset\\videos\\28-11-2017'
+save_path =  'C:\\Users\\jgraciano\\Desktop\\Dataset\\imagenes\\28-11-2017\\JuanPrueba2'
 
 classesAlph = ['a','b','c','d','e','f','g','h','i','j','k','l','m','n','o','p','q','r','s','t','u','v','w','x','y','z']
 classesNum = ['0','1','2','3','4','5','6','7','8','9']
 classesAll = ['1','2','3','4','5','6','7','8','9','a','b','c','d','e','f','g','h','i','j','k','l','m','n','o','p','q','r','s','t','u','v','w','x','y','z']
-classesDinamic = ['CJESUS']
+classesDinamic = ['nombre']
 classes = classesDinamic
 
 frame = None
@@ -25,11 +23,12 @@ idxName = 1
 # roiPts = [(310, 228), (322, 148), (303, 195), (331, 189), (380, 229), (393, 173), (365,204), (369,146)]
 # prueba
 # roiPts = [(312, 283), (374, 278), (377, 197), (322, 202), (307, 250), (374, 242), (354,242)]
+# Bien
+# roiPts = [(306, 298), (380, 288), (379, 190), (319, 194), (305, 262), (387, 250), (337,247)]
+# Bien
+roiPts = [(142, 428), (156, 459), (171, 425), (217, 438), (181, 448), (215, 460), (296,455), (273,488), (265,455), (250,476) ]
 
-cantPoint = 7
-
-rWidth = 450
-rHeight = 700
+cantPoint = 10
 
 def adaptPoints(frame):
   global roiPts
@@ -81,7 +80,7 @@ def cropContour(frame, frameWB,name, cant = 1):
   shades = []
   frame2 = frame.copy()
 
-  (restX, restY, sumX, sumY) = (2, 4, 2, 1)
+  (restX, restY, sumX, sumY) = (2, 4, 4, 2)
 
   idxH = tools.findHighContour(contours, frameWB)
   contours.pop(idxH)
@@ -96,14 +95,19 @@ def cropContour(frame, frameWB,name, cant = 1):
     # Bounding points
     (x,y,w,h) = cv2.boundingRect(cnt)
     # Append image
-    shades.append(frame[int(y-restY):int(y+h+sumY), int(x-restX):int(x+w+sumX)])
-    cv2.imshow("nueva", frame[int(y-restY):int(y+h+sumY), int(x-restX):int(x+w+sumX)])
-    name = name + '_' + str(idx)
-    idx += 1
-    # tools.saveImage(name, frame[int(y-restY):int(y+h+sumY), int(x-restX):int(x+w+sumX)].copy(), save_path, 'prueba', 'rgb')
-    cant += 1
+    newImage = frame[int(y-restY):int(y+h+sumY), int(x-restX):int(x+w+sumX)]
 
-    contours.pop(biggestContour)
+    if type(newImage) is np.ndarray:
+      shades.append(newImage)
+      # cv2.imshow("nueva", newImage)
+      name = name + '_' + str(idx)
+      idx += 1
+      # tools.saveImage(name, frame[int(y-restY):int(y+h+sumY), int(x-restX):int(x+w+sumX)].copy(), save_path, 'prueba', 'rgb')
+      cant += 1
+
+      # # center 
+      # (xB, yB, wB, hB) = newImage.shape[0]*0.3, newImage.shape[1]*0.3, newImage.shape[0]*0.7, newImage.shape[1]*0.7
+      contours.pop(biggestContour)
 
   return shades
 
@@ -166,7 +170,7 @@ def selectROI(event, x, y, flags, param):
         cv2.imshow("frame", frame)
 
 def edgeDetection(gray):
-    mg_gaussian = cv2.GaussianBlur(gray,(3,3),0)
+    img_gaussian = cv2.GaussianBlur(gray,(3,3),0)
     # Canny
     # myCanny = cv2.Canny(img_gaussian.copy(), img_gaussian.mean(), 200)
     
@@ -193,7 +197,7 @@ def edgeDetection(gray):
 
     return myCanny
 
-def blurDetection(shades, name, out, fld):
+def blurDetection(shades, name, out, fld, namePath):
   global frame, idxName
   blurryFlag = False
   good = True
@@ -207,7 +211,7 @@ def blurDetection(shades, name, out, fld):
       good = False
       break
 
-    if fm < 850:
+    if fm < 200:
       blurryFlag = True
       # k = cv2.waitKey(0)
       break
@@ -216,50 +220,51 @@ def blurDetection(shades, name, out, fld):
   if blurryFlag is True:
     text = "Blurry"
   else:
-    # tools.saveImage(name, out.copy(), save_path, fld, 'CWB_sobel')
+    # tools.saveImage(name, out.copy(), save_path +'\\'+ namePath, fld, 'Laplacian')
     idxName +=1
   if good is True:
     cv2.putText(frame, "{}: {:.2f}".format(text,fm), (10, 30),cv2.FONT_HERSHEY_SIMPLEX, 0.8, (0, 0, 255), 3)
 
 k = 0
-def readVideo(video, fld):
+def readVideo(video, fld, namePath):
 
     global frame, roiPts, inputMode, idxName
+    inputMode = True
     cv2.namedWindow("frame")
     cv2.setMouseCallback("frame", selectROI)
     
     ###
     vainita = False
-    time = 27
-    begin = False
+    time = 20
+    begin = True
     fingerTips = []
     lower = []
     upper = []
-    k = ord("d")
+    # k = ord("d")
     selectionJump = 0
     idxName = 1
-    adapt = True
-    yaTaBueno = True
+    # adapt = True
+    # yaTaBueno = True
     ###
+
     cap = cv2.VideoCapture(video) 
     
     while( cap.isOpened() ):
         ret,frame = cap.read()
-        name = senia + '_' + fld + '_' + str(idxName)
+        name = fld + '_' + str(idxName)
 
         if ret is not True:
             break
 
-        rotated = rotate_bound(frame, 0)
-        frame = tools.resize(rotated, 700, 450)
+        rotated = rotate_bound(frame, 90)
+        frame = tools.resize(rotated, 450, 700)
         # frame = cv2.cvtColor(frame.copy(), cv2.COLOR_BGR2GRAY)
 
         if selectionJump % 2:
-            inputMode = True
             while len(roiPts) < cantPoint:
                 cv2.imshow("frame", frame)
                 cv2.waitKey(0)
-            begin = True
+            # begin = True
 
             # Vamo a coge lo colore
             hsv = cv2.cvtColor(frame.copy(), cv2.COLOR_BGR2HLS)
@@ -277,23 +282,22 @@ def readVideo(video, fld):
               lower = np.array(lower)
               upper = np.array(upper)
               begin = False
-
             
             # Vamo a filtra lo colore
             if vainita:
-              blurFrame = cv2.blur(frame.copy(),(25,25))
+              value = (25, 25)
+              blurFrame = cv2.blur(frame.copy(),value)
               hsvB = cv2.cvtColor(blurFrame, cv2.COLOR_BGR2HLS)
 
               output, promLower, promUpper = tools.mergeColorsImage(hsvB, lower, upper)
-              if yaTaBueno is True:
-                print("lower {0} \n upper {1} ".format(promLower, promUpper))
-                yaTaBueno = False
+              # if yaTaBueno is True:
+                # print("lower {0} \n upper {1} ".format(promLower, promUpper))
+                # yaTaBueno = False
               median = cv2.medianBlur(output,7)
               res = cv2.bitwise_and(frame, frame, mask = median)
               
               ####
               gray = cv2.cvtColor(res.copy(), cv2.COLOR_BGR2GRAY)
-              value = (15, 15)
               blurred = cv2.GaussianBlur(gray, value, 0)
               myThreshBinaryInv = cv2.threshold(blurred, 20,255, cv2.THRESH_BINARY)
               
@@ -306,7 +310,7 @@ def readVideo(video, fld):
               # Merge canny and threshold
               out = inv[1] + edgeDetection(gray)
 
-              blurDetection(shades, name, out, fld)
+              blurDetection(shades, name, out, fld, namePath)
 
               cv2.imshow("out",out)
               cv2.imshow("res",res)
@@ -321,15 +325,19 @@ def readVideo(video, fld):
     cv2.destroyAllWindows()
 
 def readFolder2():
-    global frame
+    global frame, roiPts
     print('Reading image')
     for fld in classes:   # assuming data directory has a separate folder for each class, and that each folder is named after the class
         index = classes.index(fld)
         print('Loading {} files (Index: {})'.format(fld, index))
         path = os.path.join(video_path, fld,'*mp4')
         files = glob.glob(path)
+        idxName = 0
         for fl in files:
-            readVideo(fl, fld)
+            readVideo(fl, fld, str(idxName))
+            idxName += 1
+            roiPts = []
+            cv2.waitKey(0)
 
             if k == ord("e"):
                 break

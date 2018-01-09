@@ -873,7 +873,7 @@ def mergeColorsImage(frame, lowerBound, upperBound):
                 promLower= lowerBound[i][j]
                 promUpper = upperBound[i][j]
             else:
-                print(promLower-lowerBound[i][j])
+                # print(promLower-lowerBound[i][j])
                 promLower = (promLower + lowerBound[i][j])/2
                 promUpper = (promLower + upperBound[i][j])/2
                 mask += cv2.inRange(frame, lowerBound[i][j], upperBound[i][j])
