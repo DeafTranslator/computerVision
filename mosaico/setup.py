@@ -5,9 +5,13 @@ import numpy as np
 import math
 import modules.myCV as myCV
 
-train_path = 'C:\\Users\\jgraciano\\Desktop\\Dataset\\imagenes\\28-11-2017'
-video_path = 'C:\\Users\\jgraciano\\Desktop\\Dataset\\videos\\28-11-2017'
-save_path =  'C:\\Users\\jgraciano\\Desktop\\Dataset\\imagenes\\28-11-2017\\JuanPrueba2'
+date = '13-1-2018'
+defURLTrain = 'C:\\Users\\jgraciano\\Desktop\\Dataset\\'
+defURLSave = 'C:\\Users\\jgraciano\\Desktop\\Dataset\\'
+
+train_path = defURLTrain +'imagenes\\' + date
+video_path = defURLTrain+ 'videos\\'+ date
+save_path =  defURLSave + 'imagenes\\'+ date +'\\JuanPrueba2'
 
 classesAlph = ['a','b','c','d','e','f','g','h','i','j','k','l','m','n','o','p','q','r','s','t','u','v','w','x','y','z']
 classesNum = ['0','1','2','3','4','5','6','7','8','9']
@@ -22,7 +26,8 @@ classes = classesDinamic
 # Bien
 # roiPts = [(306, 298), (380, 288), (379, 190), (319, 194), (305, 262), (387, 250), (337,247)]
 # Bien
-roiPts = [(142, 428), (156, 459), (171, 425), (217, 438), (181, 448), (215, 460), (296,455), (273,488), (265,455), (250,476) ]
+roiPts = []
+# roiPts = [(142, 428), (156, 459), (171, 425), (217, 438), (181, 448), (215, 460), (296,455), (273,488), (265,455), (250,476) ]
 
 cantPoint = 10
 
@@ -46,4 +51,5 @@ hiImage = 700
 # modulus
 modulu = 2
 
+#
 valueBlur = (25, 25)

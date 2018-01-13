@@ -4,8 +4,8 @@ import glob
 import tools
 import numpy as np
 
-train_path = 'C:\\Users\\jgraciano\\Desktop\\Dataset\\imagenes\\29-10-2017\\Mirta\\simpleCrop'
-save_path =  'C:\\Users\\jgraciano\\Desktop\\Dataset\\imagenes\\29-10-2017\\Mirta\\cropHand'
+train_path = 'C:\\Users\\jgraciano\\Desktop\\Dataset\\imagenes\\13-1-2018\\Mirta\\simpleCrop'
+save_path =  'C:\\Users\\jgraciano\\Desktop\\Dataset\\imagenes\\13-1-2019\\Mirta\\cropHand'
 
 classesAlph = ['a','b','c','d','e','f','g','h','i','j','k','l','m','n','o','p','q','r','s','t','u','v','w','x','y','z']
 classesNum = ['0','1','2','3','4','5','6','7','8','9']
