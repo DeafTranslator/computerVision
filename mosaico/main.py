@@ -59,7 +59,7 @@ def loadVideo(video, fld, namePath):
     
     while( cap.isOpened() ):
         ret, frame = cap.read()
-        name = fld + '_' + str(idxVideo)
+        name = fld + '_' + str(idxFrame)
 
         if ret is not True:
             break

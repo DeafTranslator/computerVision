@@ -1,6 +1,6 @@
 import sys
 sys.path.append("../..")
-from setup import cv2, np
+from setup import cv2, np, myCV, saveMode, save_path, blurryLim
 
 def variance_of_laplacian(image):
   return cv2.Laplacian(image, cv2.CV_64F).var()
@@ -19,7 +19,7 @@ def blurDetection(shades, inI, name, outI, fld, namePath):
       good = False
       break
 
-    if fm < 200:
+    if fm < blurryLim:
       blurryFlag = True
       # k = cv2.waitKey(0)
       break
@@ -27,10 +27,9 @@ def blurDetection(shades, inI, name, outI, fld, namePath):
   text = "Not blurry"
   if blurryFlag is True:
     text = "Blurry"
-  else:
-    pass
-    # tools.saveImage(name, outI.copy(), save_path +'\\'+ namePath, fld, 'Laplacian')
-    # idxName +=1
+  elif saveMode:
+    myCV.saveImage(name, outI.copy(), save_path +'\\'+ namePath, fld, 'Laplacian')
+    print("saved")
 
   if good is True:
     return cv2.putText(inI, "{}: {:.2f}".format(text,fm), (10, 30),cv2.FONT_HERSHEY_SIMPLEX, 0.8, (0, 0, 255), 3)
