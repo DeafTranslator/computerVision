@@ -10,6 +10,10 @@ inputMode = False
 idxVideo = 1
 k = 0
 
+file = open("coordenadas.txt", "r+")
+file.seek(0)
+file.close()
+
 def selectROI(event, x, y, flags, param):
     # grab the reference to the current frame, list of ROI
     # points and whether or not it is ROI selection mode
@@ -25,8 +29,12 @@ def selectROI(event, x, y, flags, param):
         xmax = x + frame.shape[1]*setup.diamRoi
         ymax = y + frame.shape[0]*setup.diamRoi
         
-        print("x: {0}\n y: {1} xmax: {2}\n ymax: {3}".format(x, y, xmax, ymax))
-
+        print("({0}, {1})\n xmax: {2}\n ymax: {3}\n".format(x, y, xmax, ymax))
+        file = open("coordenadas.txt", "r+")
+        old = file.read()
+        file.seek(0)
+        file.write("{} ({}, {}),".format(old, x, y))
+        file.close()
         # rectangle
         setup.cv2.rectangle(frame, (x,y), (int(xmax), int(ymax) ), (0,0,255),2)
         # rectangle's number
@@ -64,7 +72,7 @@ def loadVideo(video, fld, namePath):
         if ret is not True:
             break
 
-        rotated = rot.rotate_bound(frame, 90)
+        rotated = rot.rotate_bound(frame, 0)
         frame = setup.myCV.resize(rotated, setup.wdImage, setup.hiImage)
  
         if idxFrame % setup.modulu:

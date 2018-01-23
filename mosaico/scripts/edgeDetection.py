@@ -14,18 +14,18 @@ def edgeDetection(gray):
     # cv2.CV_64F
     
     # #prewitt
-    # kernelx = np.array([[1,1,1],[0,0,0],[-1,-1,-1]])
-    # kernely = np.array([[-1,0,1],[-1,0,1],[-1,0,1]])
-    # kernelx = np.array([[0,0,0],[0,1,0],[0,0,-1]])
-    # kernely = np.array([[0,0,0],[0,0,1],[0,-1,0]])
+    kernelx = np.array([[1,1,1],[0,0,0],[-1,-1,-1]])
+    kernely = np.array([[-1,0,1],[-1,0,1],[-1,0,1]])
+    kernelx = np.array([[0,0,0],[0,1,0],[0,0,-1]])
+    kernely = np.array([[0,0,0],[0,0,1],[0,-1,0]])
 
-    # img_prewittx = cv2.filter2D(img_gaussian, -1, kernelx)
-    # img_prewitty = cv2.filter2D(img_gaussian, -1, kernely)
-    # myCanny = img_prewitty + img_prewittx
+    img_prewittx = cv2.filter2D(img_gaussian, -1, kernelx)
+    img_prewitty = cv2.filter2D(img_gaussian, -1, kernely)
+    myCanny2 = img_prewitty + img_prewittx
 
     #sobel
     # img_sobelx = cv2.Sobel(img_gaussian,cv2.CV_8U,1,0,ksize=3)
     # img_sobely = cv2.Sobel(img_gaussian,cv2.CV_8U,0,1,ksize=3)
     # myCanny = img_sobelx + img_sobely
 
-    return myCanny
+    return myCanny + myCanny2
