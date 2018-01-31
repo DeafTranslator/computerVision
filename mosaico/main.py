@@ -10,9 +10,7 @@ inputMode = False
 idxVideo = 1
 k = 0
 
-file = open("coordenadas.txt", "r+")
-file.seek(0)
-file.close()
+file = open("coordenadas.txt", "w").close()
 
 def selectROI(event, x, y, flags, param):
     # grab the reference to the current frame, list of ROI
@@ -73,6 +71,7 @@ def loadVideo(video, fld, namePath):
             break
 
         rotated = rot.rotate_bound(frame, 0)
+        # frame = rotated
         frame = setup.myCV.resize(rotated, setup.wdImage, setup.hiImage)
  
         if idxFrame % setup.modulu:

@@ -27,10 +27,8 @@ def cropContour(frame, frameWB,name, cant = 1):
 
     if type(newImage) is np.ndarray:
       shades.append(newImage)
-      # cv2.imshow("nueva", newImage)
       name = name + '_' + str(idx)
       idx += 1
-      # tools.saveImage(name, frame[int(y-restY):int(y+h+sumY), int(x-restX):int(x+w+sumX)].copy(), save_path, 'prueba', 'rgb')
       cant += 1
 
       # # center 
