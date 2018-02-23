@@ -4,8 +4,8 @@ import glob
 import numpy as np
 import random
 
-train_path ='C:\\Users\\jgraciano\\Desktop\\Dataset\\imagenes\\20-1-2018\\JesusCanny\\0\\'
-save_path = 'C:\\Users\\jgraciano\\Desktop\\Dataset\\imagenes\\20-1-2018\\JesusCanny\\0\\tuv2'
+train_path ='C:\\Users\\jgraciano\\Desktop\\Dataset\\imagenes\\20-1-2018\\JesusPrewitt\\0\\'
+save_path = 'C:\\Users\\jgraciano\\Desktop\\Dataset\\imagenes\\20-1-2018\\JesusPrewitt\\0\\tuv2'
 
 classTu = ['tu']
 classes = classTu

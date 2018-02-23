@@ -70,7 +70,7 @@ def loadVideo(video, fld, namePath):
         if ret is not True:
             break
 
-        rotated = rot.rotate_bound(frame, 0)
+        rotated = rot.rotate_bound(frame, setup.degree)
         # frame = rotated
         frame = setup.myCV.resize(rotated, setup.wdImage, setup.hiImage)
  

@@ -4,16 +4,13 @@ import cv2
 
 clase = 'tu'
 
-train_path = 'C:\\Users\\jgraciano\\Desktop\\Dataset\\imagenes\\20-1-2018\\Jesus2\\0\\tuv2\\' + clase
-save_path = 'C:\\Users\\jgraciano\\Desktop\\Dataset\\imagenes\\20-1-2018\\JesusTest\\' + clase
+train_path = 'C:\\Users\\jgraciano\\Desktop\\Dataset\\imagenes\\13-1-2018\\JuanEtE\\0\\' + clase
+save_path = 'C:\\Users\\jgraciano\\Desktop\\Dataset\\imagenes\\13-1-2018\\MosaicoJuanLaplacian\\' + clase
 
-text_path = 'C:\\Users\\jgraciano\\Desktop\\TeEnsenia\\computerVision\\manejoImagen\\textos\\' + clase
+text_path = 'C:\\Users\\jgraciano\\Desktop\\TeEnsenia\\computerVision\\manejoImagen\\textos\\juan\\' + clase
 
-classesAlph = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l',
-    'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z']
 classesNum = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12', '13', '14', '15', '16', '17', '18', '19',
     '20', '21', '22', '23', '24', '25', '26', '27', '28', '29', '30', '31', '32', '33', '34', '35', '36', '37', '38', '39']
-classesDinamic = ['tu']
 
 folders = classesNum
 
@@ -44,7 +41,10 @@ def createFolder(fl):
 
 def matchImage(imageName, mosaic):
     imageName = imageName.split('.')
-    imageName[0] = str(imageName[0]) + '-merge'
+    # for 'tuv2'
+    # imageName[0] = str(imageName[0]) + '-merge'
+    # for anything else
+    imageName[0] = str(imageName[0])
     for name in mosaic:
         name = name.split('\n')
         if str(imageName[0]) == str(name[0]):
