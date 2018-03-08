@@ -1,16 +1,13 @@
 import sys
 sys.path.append("../..")
-from setup import cv2, np
+from setup import cv2, np, hands
 
 def coverFace(frame, frameWB):
-  frameWB, contours, hierarchy = cv2.findContours(frameWB, cv2.RETR_LIST, cv2.CHAIN_APPROX_SIMPLE)
+  frameWB, contours, hierarchy = cv2.findContours(frameWB, cv2.RETR_LIST, cv2.CHAIN_APPROX_NONE)
 
-  restX = 10
-  restY = 10
-  sumX = 10
-  sumY = 10
+  restX, restY, sumX, sumY = 10, 10, 10, 10
 
-  indexOfHighContour = 1
+  indexOfHighContour = 0
   i = 0
   yMax = frameWB.shape[0]
   while i < len(contours):
@@ -32,5 +29,3 @@ def coverFace(frame, frameWB):
   frame[int(y-restY):int(y+h+sumY), int(x-restX):int(x+w+sumX)] = merge
 
   return frame, result
-
-  # return indexOfBiggestContour

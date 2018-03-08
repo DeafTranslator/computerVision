@@ -2,10 +2,13 @@ import os
 import glob
 import cv2
 
-clase = 'tu'
+clase = 'como'
 
-train_path = 'C:\\Users\\jgraciano\\Desktop\\Dataset\\imagenes\\13-1-2018\\JuanEtE\\0\\' + clase
-save_path = 'C:\\Users\\jgraciano\\Desktop\\Dataset\\imagenes\\13-1-2018\\MosaicoJuanLaplacian\\' + clase
+# train_path = 'C:\\Users\\jgraciano\\Desktop\\Dataset\\imagenes\\28-1-2018\\SAMSUNG\\JuanLaplacian2\\0\\' + clase
+# save_path = 'C:\\Users\\jgraciano\\Desktop\\Dataset\\imagenes\\28-1-2018\\SAMSUNG\\JuanLaplacian2\\' + clase
+
+train_path = 'C:\\Users\\jgraciano\\Desktop\\Dataset\\imagenes\\13-1-2018\\JuanLaplacian\\0\\' + clase + '\\3'
+save_path = 'C:\\Users\\jgraciano\\Desktop\\Dataset\\imagenes\\13-1-2018\\JuanLaplacian\\' + clase
 
 text_path = 'C:\\Users\\jgraciano\\Desktop\\TeEnsenia\\computerVision\\manejoImagen\\textos\\juan\\' + clase
 
@@ -54,7 +57,7 @@ def matchImage(imageName, mosaic):
     return False
 
 
-def readimage(mosaic):
+def readimage(mosaic, idx):
     global actualPath
     print('Reading images')
     path = os.path.join(train_path, '*g')
@@ -74,11 +77,13 @@ def match():
     path = os.path.join(text_path, '*txt')
     files = glob.glob(path)
     print('Reading text')
+    idx = 1
     for fl in files:
         mosaic = loadNames(fl)
         print('Number of images in this mosaic: ' + str(len(mosaic)))
         createFolder(os.path.basename(fl))
-        readimage(mosaic)
+        readimage(mosaic, str(idx))
+        idx += 1 
     print('Done!')
 
 match()

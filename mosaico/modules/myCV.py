@@ -4,6 +4,9 @@ import cv2
 import numpy as np
 import argparse
 import random
+import sys
+sys.path.append("../..")
+import setup
 # import imutils
 
 
@@ -848,9 +851,20 @@ def averageColors(frame, roiPts):
         # if stdColor3 < np.std(color3, ddof=1):
         stdColor3 = np.std(color3)
 
+        # maxColor1 = np.amax(color1)
+        # maxColor2 = np.amax(color2)
+        # maxColor3 = np.amax(color3)
+
+        # minColor1 = np.amin(color1)
+        # minColor2 = np.amin(color2)
+        # minColor3 = np.amin(color3)
+
         lower_bounds.append([int(meanColor1-(stdColor1)), int(meanColor2-(stdColor2)), int(meanColor3-(stdColor3))])
         upper_bounds.append([int(meanColor1+(stdColor1)), int(meanColor2+(stdColor2)), int(meanColor3+(stdColor3))])
-    
+
+        # lower_bounds.append([int(minColor1), int(minColor2), int(minColor3)])
+        # upper_bounds.append([int(maxColor1), int(maxColor2), int(maxColor3)])
+
     return (lower_bounds, upper_bounds)
 
 def boundsColor(frame, roiPts):
@@ -889,17 +903,17 @@ def mergeColorsImage(frame, lowerBound, upperBound):
 
 def drawRectangle(frame, roiPts):
     i = 0
-    cantPoint = 10
+    cantPoint = setup.cantPoint
     # font de la letra
     font = cv2.FONT_HERSHEY_SIMPLEX
     if len(roiPts) > len(roiPts)-1:
         # Poner texto en la pantalla
-        cv2.putText(frame, 'Press D',(int(frame.shape[1]*0.35), int(frame.shape[0]*0.2)), font, 1,(0,255,0),3)
+        cv2.putText(frame, 'Press D',(int(frame.shape[1]*setup.wdTxt), int(frame.shape[0]*setup.hiTxt)), setup.font, setup.sizThk,(0,255,0),3)
         # Colocar los cuadros en la pantalla para captua de colores
         while(i < len(roiPts)):
-            xmax = roiPts[i][0] + frame.shape[1]*0.02
-            ymax = roiPts[i][1] + frame.shape[0]*0.02
-            cv2.rectangle(frame, roiPts[i], (int(xmax), int(ymax) ), (0,255,0),2)
+            xmax = roiPts[i][0] + frame.shape[1]*setup.diamRoi
+            ymax = roiPts[i][1] + frame.shape[0]*setup.diamRoi
+            cv2.rectangle(frame, roiPts[i], (int(xmax), int(ymax)), (0,255,0),2)
             i += 1
 
     return frame

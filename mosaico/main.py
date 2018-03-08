@@ -10,7 +10,16 @@ inputMode = False
 idxVideo = 1
 k = 0
 
+# Clean .txt file
 file = open("coordenadas.txt", "w").close()
+
+# Write file
+def writeTXT(posX, posY):
+  file = open("coordenadas.txt", "r+")
+  old = file.read()
+  file.seek(0)
+  file.write("{} ({}, {}),".format(old, posX, posY))
+  file.close()
 
 def selectROI(event, x, y, flags, param):
     # grab the reference to the current frame, list of ROI
@@ -28,16 +37,17 @@ def selectROI(event, x, y, flags, param):
         ymax = y + frame.shape[0]*setup.diamRoi
         
         print("({0}, {1})\n xmax: {2}\n ymax: {3}\n".format(x, y, xmax, ymax))
-        file = open("coordenadas.txt", "r+")
-        old = file.read()
-        file.seek(0)
-        file.write("{} ({}, {}),".format(old, x, y))
-        file.close()
-        # rectangle
+
+        # Take ROI positions
+        writeTXT(x, y)
+
+        # Make rectangle
         setup.cv2.rectangle(frame, (x,y), (int(xmax), int(ymax) ), (0,0,255),2)
-        # rectangle's number
+
+        # Draw cant of rectangles
         setup.cv2.putText(frame, str((len(setup.roiPts))),(int(x), int(y)), setup.font, setup.sizThk,(255,255,255),2)
 
+        # Green go
         i = 0
         if len(setup.roiPts) > setup.cantPoint-1:
           while(i < setup.cantPoint):
@@ -47,6 +57,27 @@ def selectROI(event, x, y, flags, param):
             setup.cv2.putText(frame, 'Press any key',(int(frame.shape[1]*setup.wdTxt), int(frame.shape[0]*setup.hiTxt)), setup.font, setup.sizThk,(0,255,0),3)
             i += 1
         setup.cv2.imshow("frame", frame)
+
+def fillContour(img):
+  frame = img.copy()
+  _, thresh1 = setup.cv2.threshold(frame.copy(), 75, 255, setup.cv2.THRESH_BINARY)
+  __, contours, hierarchy = setup.cv2.findContours(thresh1, setup.cv2.RETR_LIST, setup.cv2.CHAIN_APPROX_NONE)
+
+  i = 0
+  while len(contours) is not 0:
+    i += 1
+    # Find biggest contour
+    biggestContour = setup.myCV.findBiggestContour(contours)
+    cnt = contours[biggestContour]
+    setup.cv2.drawContours(frame, [cnt], -1, 255, 2)
+    contours.pop(biggestContour)
+
+  # setup.cv2.imshow("thresh1",thresh1)
+  # setup.cv2.imshow("cambio",frame)
+  # setup.cv2.waitKey(0)
+
+  # _, thresh1 = setup.cv2.threshold(frame.copy(), 100, 255, setup.cv2.THRESH_BINARY_INV)
+  return frame
 
 def loadVideo(video, fld, namePath):
 
@@ -102,26 +133,30 @@ def loadVideo(video, fld, namePath):
 
               output, promLower, promUpper = setup.myCV.mergeColorsImage(hsvB, lower, upper)
               median = setup.cv2.medianBlur(output,7)
+              median = fillContour(median.copy())
               res = setup.cv2.bitwise_and(frame, frame, mask = median)
               
               ####
               gray = setup.cv2.cvtColor(res.copy(), setup.cv2.COLOR_BGR2GRAY)
-              blurred = setup.cv2.GaussianBlur(gray, setup.valueBlur, 0)
-              myThreshBinaryInv = setup.cv2.threshold(blurred, 20,255, setup.cv2.THRESH_BINARY)
+              # blurred = setup.cv2.GaussianBlur(gray, setup.valueBlur, 0)
+              myThreshBinaryInv = setup.cv2.threshold(gray, 20,255, setup.cv2.THRESH_BINARY)
               
               # Vamo a recortar los contornos
-              shades = crp.cropContour(frame, median, name , cant = 2)
-              gray, nurvo = cfa.coverFace(gray, myThreshBinaryInv[1])
-              inv = setup.cv2.threshold(nurvo, 20,255, setup.cv2.THRESH_BINARY_INV)
+              shades = crp.cropContour(frame, median.copy(), name , cant = setup.hands)
+              gray, nurvo = cfa.coverFace(gray, median)
+              inv = setup.cv2.threshold(nurvo.copy(), 90,255, setup.cv2.THRESH_BINARY_INV)
 
               # Merge canny and threshold
-              out = inv[1] + edd.edgeDetection(gray)
+              aha = edd.edgeDetection(gray.copy())
+              out = inv[1] + aha
 
               bld.blurDetection(shades, frame, name, out, fld, namePath)
 
-              setup.cv2.imshow("out",out)
-              setup.cv2.imshow("res",res)
-            setup.cv2.imshow("frame", frame)
+              if setup.saveMode is False:
+                setup.cv2.imshow("out",out)
+                setup.cv2.imshow("res",res)
+            if setup.saveMode is False:
+              setup.cv2.imshow("frame", frame)
             k = setup.cv2.waitKey(1)
         idxFrame += 1
 

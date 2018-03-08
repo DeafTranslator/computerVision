@@ -5,42 +5,47 @@ import numpy as np
 import math
 import modules.myCV as myCV
 
-date = '28-1-2018'
+date = '4-3-2018'
 cameraTypes = ["\\LG", "\\SAMSUNG"]
 camera = cameraTypes[1]
+
+sources = ["\\Juan", "\\Jesus"]
+who = sources[1]
+filterName = 'Laplacian'
+
 defURLTrain = 'C:\\Users\\jgraciano\\Desktop\\Dataset\\'
 defURLSave = 'C:\\Users\\jgraciano\\Desktop\\Dataset\\'
 
 train_path = defURLTrain +'imagenes\\' + date
-video_path = defURLTrain+ 'videos\\2018\\'+ date + camera
-save_path =  defURLSave + 'imagenes\\'+ date + camera +'\\JuanLaplacian_prewitt'
+video_path = defURLTrain+ 'videos\\2018\\'+ date + camera + who
+save_path =  defURLSave + 'imagenes\\'+ date + camera + who + filterName
 
-classesDinamic = ['bien']
+classesDinamic = ['adios']
 classes = classesDinamic
-
+	
 # SAVE MODE
 saveMode = False
 
 # cant ROI
-cantPoint = 8
+cantPoint = 5
 
 # Bien
 roiPts = []
 
-# 8 para "nombre"
-# roiPts = [(233, 144), (259, 137), (284, 196), (220, 193), (127, 418), (354, 436), (360,460), (123,441) ]
+# 12 para "adios" SAMSUNG JESUS 0.015
+# roiPts = [(53, 386), (55, 399), (63, 411), (75, 411), (100, 411), (93, 399), (86, 383), (74, 382), (61, 355), (116, 405), (93, 355), (263, 260)]
 
 # ROI measure (LO CUADRITO PA COGER LO COLORE)
-diamRoi = 0.02
+diamRoi = 0.023
 
 # Text measure
-wdTxt = 0.35
-hiTxt = 0.2
-sizThk = 1
+wdTxt = 1
+hiTxt = 1
+sizThk = 0.8
 font = cv2.FONT_HERSHEY_SIMPLEX
 
 # frame collected to get colors
-frameCollected = 12
+frameCollected = 20
 
 # 
 wdImage = 450
@@ -56,4 +61,14 @@ valueBlur = (25, 25)
 blurryLim = 10
 
 # degree of rotation
-degree = 90
+degree = 0
+
+hands = 2
+
+# depreciacion = costo - valor residual / la vida util
+
+# caja y banco
+# inventario
+# documento y cuentas por cobrar
+
+# ejercicio 4.7 de flujo de efectivo hay que estudiarlo para el examen

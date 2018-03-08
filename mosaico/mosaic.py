@@ -31,15 +31,11 @@ def mosaic(frame):
         max_x = max_y = 0
 
         # computes the bounding box for the contour, and draws it on the frame,
-        xs = 0
+        xs, ws, hs= 0, 0, 0
         ys = thresh1.shape[0]
-        ws = 0
-        hs = 0
 
-        xs2 = 0
+        xs2, ws2, hs2 = 0, 0, 0
         ys2 = thresh1.shape[0]
-        ws2 = 0
-        hs2 = 0
 
         print("cantidad", len(contours))
         frame2 = blurred.copy()
@@ -117,7 +113,6 @@ def mosaic(frame):
         return merge, hand1, hand2
 
 k = 0
-
 def readFolder():
 
     if imagesInMosaic%2 is not 0:

@@ -4,10 +4,20 @@ import glob
 import numpy as np
 import random
 
-train_path ='C:\\Users\\jgraciano\\Desktop\\Dataset\\imagenes\\20-1-2018\\JesusPrewitt\\0\\'
-save_path = 'C:\\Users\\jgraciano\\Desktop\\Dataset\\imagenes\\20-1-2018\\JesusPrewitt\\0\\tuv2'
 
-classTu = ['tu']
+train_path ='C:\\Users\\jgraciano\\Desktop\\Dataset\\imagenes\\28-1-2018\\LG\\JesusLaplacian\\0\\'
+save_path = 'C:\\Users\\jgraciano\\Desktop\\Dataset\\imagenes\\28-1-2018\\LG\\JesusLaplacian\\0\\'
+
+clase = "adios_"
+classesNum = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12', '13', '14', '15', '16', '17', '18', '19',
+    '20', '21', '22', '23', '24', '25', '26', '27', '28', '29', '30', '31', '32', '33', '34', '35', '36', '37', '38', '39']
+
+laverdadera = []
+
+for i in range(0, len(classesNum) - 1):
+    laverdadera.append(clase + classesNum[i])
+
+classTu = ['bien']
 classes = classTu
 
 frame = None
@@ -39,10 +49,10 @@ def readFolder():
             frame = cv2.imread(fl)
             name = os.path.basename(fl)
 
-            merge = np.zeros((int(175), int(450), 1))
+            merge = np.zeros((int(200), int(450), 1))
             merge.fill(255)
             
-            frame[:,:][int(525):int(700), int(0):int(merge.shape[1])] = merge
+            frame[:,:][int(500):int(700), int(0):int(merge.shape[1])] = merge
 
             cv2.imshow("frame", frame)
 

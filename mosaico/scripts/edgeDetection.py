@@ -28,5 +28,5 @@ def edgeDetection(gray):
     # img_sobely = cv2.Sobel(img_gaussian,cv2.CV_8U,0,1,ksize=3)
     # myCanny = img_sobelx + img_sobely
 
-    return myCanny + myCanny2
-    # return myCanny
+    # return myCanny + myCanny2
+    return myCanny

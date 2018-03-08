@@ -907,8 +907,8 @@ def drawRectangle(frame, roiPts):
 def findBiggestContour(contours):
     indexOfBiggestContour = 1
     sizeOfBiggestContour = 0
-    for i in range(0,len(contours)-1):
-        if len(contours[i]) > sizeOfBiggestContour:
+    for i in range(0,len(contours)):
+        if len(contours[i]) > sizeOfBiggestContour and len(contours[i]) > 0:
             sizeOfBiggestContour = len(contours[i])
             indexOfBiggestContour = i
 

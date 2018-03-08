@@ -5,27 +5,38 @@ import numpy as np
 import myCV
 from enum import Enum
 
-clase = 'nombre'
+clase = 'cuanto'
 saveMode = True
 showMode = False
+stepByStep = 0
+cantHands = 1
 
-image_path ='C:\\Users\\jgraciano\\Desktop\\Dataset\\imagenes\\20-1-2018\\MosaicoJesusLaplacian\\jesus\\' + clase + '\\'
-save_path = 'C:\\Users\\jgraciano\\Desktop\\Dataset\\imagenes\\20-1-2018\\MosaicoJesusLaplacian\\' + clase + '480_720' + '\\ajuste480_720'
+date = '28-1-2018'
+cameraTypes = ["\\LG", "\\SAMSUNG"]
+camera = cameraTypes[1]
 
-classnombre = [clase + '_1', clase + '_2', clase +'_3', clase +'_4', clase +'_5', clase +'_6', clase +'_7', clase +'_8',
-clase +'_9', clase +'_10', clase +'_11', clase +'_12', clase +'_13', clase +'_14', clase +'_15', clase +'_16',
-clase +'_17', clase +'_18', clase +'_19', clase +'_20', clase +'_21', clase +'_22', clase +'_23', clase +'_24',
-clase +'_25', clase +'_26', clase +'_27', clase +'_28', clase +'_29', clase +'_30', clase +'_31', clase +'_32',
-clase +'_33', clase +'_34', clase +'_0']
+sources = ["\\Juan", "\\Jesus"]
+who = sources[0]
 
-classPrimera = [ '1',  '2', '3', '4', '5', '6', '7', '8',
-'9', '10', '11', '12', '13', '14', '15', '16',
-'17', '18', '19', '20', '21', '22', '23', '24',
-'25', '26', '27', '28', '29', '30', '31', '32',
-'33', '34', '0']
+filterName = 'Laplacian\\'
 
-classes = classPrimera
+defURLTrain = 'C:\\Users\\jgraciano\\Desktop\\Dataset\\'
+defURLSave = 'C:\\Users\\jgraciano\\Desktop\\Dataset\\'
 
+image_path = defURLTrain +'imagenes\\' + date + camera + who + filterName + clase + '\\'
+save_path =  defURLSave + 'imagenes\\'+ date + camera + who + filterName + clase + '_450_450'
+
+# image_path = defURLTrain +'imagenes\\' + date + who + filterName +'\\0\\'+ clase + '\\'
+# save_path =  defURLSave + 'imagenes\\'+ date + who + filterName + '\\0\\'+ clase + '_450_450'
+
+cantClasses = 34
+auxPath = ['450_450', '_', ' ', '']
+classes = []
+
+for i in range(0,cantClasses):
+	classes.append(clase + auxPath[2] + str(cantClasses))
+
+print(image_path)
 
 class Fill(Enum):
 	BLACK = 0
@@ -34,10 +45,10 @@ class Fill(Enum):
 cantCuadritoW = 3
 cantCuadritoH = 3
 
-cuadritoW = int(480/cantCuadritoW)
-cuadritoH = int(720/cantCuadritoH)
+cuadritoW = int(450/cantCuadritoW)
+cuadritoH = int(450/cantCuadritoH)
 
-# 334, 334
+llenar = 15
 
 k = 0
 
@@ -69,76 +80,77 @@ def sortHands(locations, shades):
 
 def resizeImage(frame, width, height):
 
-    # Adjusting size
-    if frame.shape[0] > height:
-        hy = height/frame.shape[0]
-        hx = frame.shape[1]*hy
-        frame = cv2.resize(frame, (int(hx), int(height)), interpolation = cv2.INTER_CUBIC)
-    if frame.shape[1] > width:
-        hx = width/frame.shape[1]
-        hy = frame.shape[0]*hx
-        frame = cv2.resize(frame, (int(width), int(hy)), interpolation = cv2.INTER_CUBIC)
-    
-    # Mask
-    newImage = np.zeros((int(cuadritoH), int(cuadritoW)))
-    newImage.fill(Fill.WHITE.value)
-    
-    # Putting the image in the middle
-    x_offset = (width - frame.shape[1])/2
-    y_offset = (height - frame.shape[0])/2
+	# Adjusting size
+	# if frame.shape[0] > frame.shape[1]:	
+	# 	hy = height/frame.shape[0]
+	# 	hx = frame.shape[1]*hy
+	# 	frame = cv2.resize(frame, (int(hx), int(height)), interpolation = cv2.INTER_CUBIC)
+	# else:
+	# 	hx = width/frame.shape[1]
+	# 	hy = frame.shape[0]*hx
+	# 	frame = cv2.resize(frame, (int(width), int(hy)), interpolation = cv2.INTER_CUBIC)
+	
+	if frame.shape[1] > width:
+		hx = width/frame.shape[1]
+		hy = frame.shape[0]*hx
+		frame = cv2.resize(frame, (int(width), int(hy)), interpolation = cv2.INTER_CUBIC)
+	if frame.shape[0] > height:
+		hy = height/frame.shape[0]
+		hx = frame.shape[1]*hy
+		frame = cv2.resize(frame, (int(hx), int(height)), interpolation = cv2.INTER_CUBIC)
 
-    newImage[:,:][int(y_offset):int(y_offset+frame.shape[0]), int(x_offset):int(x_offset+frame.shape[1])] = frame
+	# Mask
+	newImage = np.zeros((int(cuadritoH), int(cuadritoW)))
+	newImage.fill(Fill.WHITE.value)
 
-    return newImage
+	# print('tamanio new image')
+	# print(newImage.shape)
+
+	# Putting the image in the middle
+	x_offset = (width - frame.shape[1])/2
+	y_offset = (height - frame.shape[0])/2
+
+	# print(x_offset)
+	# print(y_offset)
+
+	newImage[:,:][int(y_offset):int(y_offset+frame.shape[0]), int(x_offset):int(x_offset+frame.shape[1])] = frame
+
+	return newImage
 
 def adjustImage(img):
 	frame = fillContour(img.copy())
-	_, contours, hierarchy = cv2.findContours(frame.copy(), cv2.RETR_LIST, cv2.CHAIN_APPROX_NONE)
+	_, thresh1 = cv2.threshold(frame.copy(), 100, 255, cv2.THRESH_BINARY)
+	_, contours, hierarchy = cv2.findContours(thresh1, cv2.RETR_LIST, cv2.CHAIN_APPROX_NONE)
 
-	# tamanio ajustado
-	cX, cY, cW, cH = img.shape[1], img.shape[0], 0, 0
+	# Encuentra el controno de la imagen completa
+	biggestContour = myCV.findBiggestContour(contours)
+	contours.pop(biggestContour)
 
-	i = 0
-	while i < 3 and len(contours) is not 1:
-		# Find biggest contour
-		biggestContour = myCV.findBiggestContour(contours)
-		cnt = contours[biggestContour]
+	# Find biggest contour (face)
+	biggestContour = myCV.findBiggestContour(contours)
+	cnt = contours[biggestContour]
 
-		# Bounding points
-		(x,y,w,h) = cv2.boundingRect(cnt)
+	# Bounding points
+	(x,y,w,h) = cv2.boundingRect(cnt)
+	maxBound = max(w, h)
+	newImg = makeBackground(int((maxBound)*cantCuadritoH), int((maxBound)*cantCuadritoW), Fill.WHITE.value)
 
-		constD = 0
-		constDi = 0
-		if x - constDi < cX - constDi:
-			cX = x + constDi
+	height = newImg.shape[0]
+	if img.shape[0]-y < height:
+		height = img.shape[0]-y
 
-		if y - constDi < cY - constDi:
-			cY = y + constDi
+	width = newImg.shape[1]
+	if img.shape[1] < width:
+		width = img.shape[1]
 
-		if w + x + constD > cW + constD:
-			cW = w + x + constD
+	x -= maxBound 
+	if x-maxBound < 0:
+		x = 0
 
-		if h + y + constD > cH + constD:
-			cH = h + y + constD
+	deff = (newImg.shape[1] - width)/2
+	newImg[int(0):int(height), int(deff):int(deff + width)] = img[int(y):int(height+y), int(0):int(width)]
 
-		# Get new image. Crop original image
-		newImage = img[int(y):int(y+h), int(x):int(x+w)]
-
-	    # Validation
-		if type(newImage) is np.ndarray:
-			contours.pop(biggestContour)
-			i += 1
-
-	if cY - 10 >= 0:
-		cY -= 10
-	if cH + 10 < img.shape[0]:
-		cH += 10
-	if cX - 10 >= 0:
-		cX -= 10
-	if cW + 10 < img.shape[1]:
-		cW += 10
-
-	return img[int(cY):int(cH), int(cX):int(cW)]
+	return newImg
 
 def headShot(shapes, location):
 	i = 1
@@ -159,41 +171,47 @@ def headShot(shapes, location):
 
 	return head, shapes, location
 
-def makeBackground(fillValue):
-	background = np.zeros((int(cuadritoH*cantCuadritoH), int(cuadritoW*cantCuadritoW)))
+def makeBackground(height, width, fillValue):
+	background = np.zeros((height, width), dtype=np.uint8)
 	background.fill(fillValue)
 	return background
 
 def fillContour(img):
 	frame = img.copy()
-	# thresh1 = cv2.adaptiveThreshold(frame, 100, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY, 115, 1)
 	_, contours, hierarchy = cv2.findContours(frame, cv2.RETR_LIST, cv2.CHAIN_APPROX_NONE)
 
+	biggestContour = myCV.findBiggestContour(contours)
+	contours.pop(biggestContour)
+
 	i = 0
-	while len(contours) is not 1:
+	while len(contours) > 0:
 		i += 1
 		# Find biggest contour
 		biggestContour = myCV.findBiggestContour(contours)
 		cnt = contours[biggestContour]
-		cv2.drawContours(frame, cnt, -1, 0, 15)
+		cv2.drawContours(frame, cnt, -1, 0, llenar)
 		contours.pop(biggestContour)
 	return frame
 
 def getHandsAndHead(img):
 	frame = fillContour(img.copy())
-	_, thresh1 = cv2.threshold(frame.copy(), 100, 255, cv2.THRESH_BINARY_INV)
-	if showMode:
-		cv2.imshow("thresh1", thresh1)
-		cv2.waitKey(0)
+	_, thresh1 = cv2.threshold(frame, 100, 255, cv2.THRESH_BINARY)
+	# if showMode:
+	# 	cv2.imshow("thresh1", thresh1)
+	# 	cv2.waitKey(0)
 	_, contours, hierarchy = cv2.findContours(thresh1, cv2.RETR_LIST, cv2.CHAIN_APPROX_NONE)
 
 	shades = []
 	location = []
 	frame2 = img.copy()
 
-	(restX, restY, sumX, sumY) = (4, 6, 6, 4)
+	(restX, restY, sumX, sumY) = (0, 0, 0, 0)
 	i = 0
-	while i < 3 and len(contours) is not 1:
+
+	biggestContour = myCV.findBiggestContour(contours)
+	contours.pop(biggestContour)
+
+	while i < 1 + cantHands and len(contours) is not 0:
 		i += 1
 		# Find biggest contour
 		biggestContour = myCV.findBiggestContour(contours)
@@ -202,13 +220,13 @@ def getHandsAndHead(img):
 		(x,y,w,h) = cv2.boundingRect(cnt)
 
 		if y - restY >= 0:
-			y -= 10
+			y -= restY
 		if y + h + sumY < img.shape[0]:
-			h += 10
+			h += sumY
 		if x - restX >= 0:
-			x -= 10
+			x -= restX
 		if x + w + sumX < img.shape[1]:
-			w += 10
+			w += sumX
 
 		# Get new image. Crop original image
 		newImage = img[int(y):int(y+h), int(x):int(x+w)]
@@ -218,10 +236,10 @@ def getHandsAndHead(img):
 			shades.append(newImage)
 			# Get porcentage location
 			location.append(( ((x+w+x)/2)/img.shape[1], ((y+h+y)/2)/img.shape[0] ))
-			print(newImage.shape)
+			# print(newImage.shape)
 			if showMode:
 				cv2.imshow("newImage", newImage)
-				cv2.waitKey(0)
+				cv2.waitKey(stepByStep)
 			cv2.destroyWindow("newImage")
 				
 			contours.pop(biggestContour)
@@ -249,30 +267,21 @@ def setLocationY(y):
 def setLocationXY(x, y, matrix, locations):
 	r, c = setLocationY(y), setLocationX(x)
 
-	if matrix[r*cantCuadritoW + c] is 1:
-		xSubtraction = locations[len(locations)-1][0] - locations[0][0]
-		ySubtraction = locations[len(locations)-1][1] - locations[0][1]
+	if matrix[r*cantCuadritoW + c][0] is 1:
+		diffInX = int((x - matrix[r*cantCuadritoW + c][1][0])*1000)
+		diffInX /= (abs(diffInX))
+		diffInX = int(diffInX)
 
-		if int(xSubtraction) is not int(ySubtraction) :
-			if ySubtraction > xSubtraction:
-				if r is not cantCuadritoH - 1:
-					r += 1
-				elif c is not 0: 
-					c -= 1
-				else:
-					c += 1
-			else:
-				if c is not cantCuadritoW - 1:
-					c += 1
-				elif r is not 0: 
-					r -= 1
-				else:
-					r += 1
-		else:
-			r = -1
-			c = -1
+		if matrix[r*cantCuadritoW + (c+diffInX)][0] is 1:
+			diffInY = int((y - matrix[r*cantCuadritoW + c][1][1])*1000)
+			diffInY /= int(abs(diffInY))
+			diffInY = int(diffInY)
+			r += diffInY
 
-	matrix[r*cantCuadritoW + c] = 1
+		c += diffInX
+
+	matrix[r*cantCuadritoW + c] = (1, (x, y))
+
 	x = cuadritoW*c
 	y = cuadritoH*r
 
@@ -283,15 +292,17 @@ def makeMosaic(img):
 	sheri = adjustImage(img.copy())
 	
 	shapes, location = getHandsAndHead(sheri)
-	# head, shapes, location = headShot(shapes, location)
+	head, shapes, location = headShot(shapes, location)
 	# location, shapes = sortHands(location, shapes)
-	background = makeBackground(Fill.WHITE.value)
+	background = makeBackground(int(cuadritoH*cantCuadritoH), int(cuadritoW*cantCuadritoW), Fill.WHITE.value)
 
 	# change shape's size for (cuadritoW * cuadritoH)
-	matrix = [0] * 9
-	for i in range(0,len(shapes)):
-		shapes[i] = resizeImage(shapes[i], cuadritoW, cuadritoH)
+	matrix = [(0, (-1,-1))] * (int(cuadritoW) * int(cuadritoH))
+	matrix[1] = (1, (int(cuadritoW + (cuadritoW/2)), int(cuadritoH/2)))
 
+	for i in range(0,len(shapes)):
+		shapes[i] = resizeImage(shapes[i], int(cuadritoW), int(cuadritoH))
+		# print(shapes[i].shape)
 		x0, y0 , matrix = setLocationXY(location[i][0], location[i][1], matrix, location)
 		if x0 >= 0 and y0 >= 0:
 			y1 = y0 + cuadritoH
@@ -300,7 +311,7 @@ def makeMosaic(img):
 			background[int(y0):int(y1), int(x0):int(x1)] = shapes[i]
 
 	# el caco
-	# head = myCV.resize(head, cuadritoW, cuadritoH)
+	head = myCV.resize(head, cuadritoW, cuadritoH)
 	head = np.zeros((int(cuadritoH), int(cuadritoW)))
 	background[int(0):int(cuadritoH), int(cuadritoW):int(cuadritoW*2)] = head
 
@@ -315,9 +326,7 @@ def loadFolder():
         files = glob.glob(path)
         for fl in files:
         	frame = cv2.imread(fl)
-        	# cv2.imshow("frame", frame)
         	name = os.path.basename(fl)
-        	# cv2.waitKey(0)
 
         	frame = makeMosaic(cv2.cvtColor(frame.copy(), cv2.COLOR_BGR2GRAY))
 
@@ -327,7 +336,7 @@ def loadFolder():
 	        	saveImage(name, frame.copy(), path2Save)
 	        if showMode is True:
 	        	cv2.imshow("resultado", frame)
-	        	cv2.waitKey(0)
+	        	cv2.waitKey(stepByStep)
 
         	if k == ord("e"):
         		break
