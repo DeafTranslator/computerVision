@@ -20,23 +20,23 @@ train_path = defURLTrain +'imagenes\\' + date
 video_path = defURLTrain+ 'videos\\2018\\'+ date + camera + who
 save_path =  defURLSave + 'imagenes\\'+ date + camera + who + filterName
 
-classesDinamic = ['adios']
+classesDinamic = ['j']
 classes = classesDinamic
 	
 # SAVE MODE
-saveMode = False
+saveMode = True
 
 # cant ROI
-cantPoint = 5
+cantPoint = 10
 
 # Bien
 roiPts = []
 
-# 12 para "adios" SAMSUNG JESUS 0.015
-# roiPts = [(53, 386), (55, 399), (63, 411), (75, 411), (100, 411), (93, 399), (86, 383), (74, 382), (61, 355), (116, 405), (93, 355), (263, 260)]
+# 10 para "adios" SAMSUNG JESUS 0.014
+roiPts = [(55, 383), (71, 378), (85, 375), (96, 375), (61, 402), (81, 398), (100, 398), (67, 418), (89, 416), (107, 411)]
 
 # ROI measure (LO CUADRITO PA COGER LO COLORE)
-diamRoi = 0.023
+diamRoi = 0.014 
 
 # Text measure
 wdTxt = 1
@@ -45,7 +45,7 @@ sizThk = 0.8
 font = cv2.FONT_HERSHEY_SIMPLEX
 
 # frame collected to get colors
-frameCollected = 20
+frameCollected = 30
 
 # 
 wdImage = 450
@@ -55,7 +55,7 @@ hiImage = 700
 modulu = 2
 
 #
-valueBlur = (25, 25)
+valueBlur = (5, 5)
 
 # Blurry 
 blurryLim = 10

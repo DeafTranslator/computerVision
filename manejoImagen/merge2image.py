@@ -4,21 +4,36 @@ import glob
 import numpy as np
 import random
 
+date = '4-3-2018'
+cameraTypes = ["\\LG", "\\SAMSUNG"]
+camera = cameraTypes[1]
 
-train_path ='C:\\Users\\jgraciano\\Desktop\\Dataset\\imagenes\\28-1-2018\\LG\\JesusLaplacian\\0\\'
-save_path = 'C:\\Users\\jgraciano\\Desktop\\Dataset\\imagenes\\28-1-2018\\LG\\JesusLaplacian\\0\\'
+sources = ["\\Juan", "\\Jesus"]
+who = sources[1]
+filterName = 'Laplacian'
+
+defURLTrain = 'C:\\Users\\jgraciano\\Desktop\\Dataset\\'
+defURLSave = 'C:\\Users\\jgraciano\\Desktop\\Dataset\\'
+
+train_path = defURLTrain +'imagenes\\' + date + camera + who + filterName + "\\0\\"
+save_path =  defURLSave + 'imagenes\\'+ date + camera + who + filterName + "\\0\\"
+
+classesDinamic = ['z']
+classes = classesDinamic
 
 clase = "adios_"
-classesNum = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12', '13', '14', '15', '16', '17', '18', '19',
-    '20', '21', '22', '23', '24', '25', '26', '27', '28', '29', '30', '31', '32', '33', '34', '35', '36', '37', '38', '39']
+
+cantClasses = 39
+classesNum = []
+
+for i in range(0, cantClasses):
+    classesNum.append(str(i))
 
 laverdadera = []
 
 for i in range(0, len(classesNum) - 1):
     laverdadera.append(clase + classesNum[i])
 
-classTu = ['bien']
-classes = classTu
 
 frame = None
 
@@ -43,26 +58,27 @@ def readFolder():
     for fld in classes:   # assuming data directory has a separate folder for each class, and that each folder is named after the class
         index = classes.index(fld)
         print('Loading {} files (Index: {})'.format(fld, index))
-        path = os.path.join(train_path, fld,'*g')
-        files = glob.glob(path)
-        for fl in files:
-            frame = cv2.imread(fl)
-            name = os.path.basename(fl)
+        for num in classesNum:
+            path = os.path.join(train_path, fld, num,'*g')
+            files = glob.glob(path)
+            for fl in files:
+                frame = cv2.imread(fl)
+                name = os.path.basename(fl)
 
-            merge = np.zeros((int(200), int(450), 1))
-            merge.fill(255)
-            
-            frame[:,:][int(500):int(700), int(0):int(merge.shape[1])] = merge
+                hdMerge = 100
+                merge = np.zeros((int(hdMerge), int(450), 1))
+                merge.fill(255)
+                
+                frame[:,:][int(700 - hdMerge):int(700), int(0):int(merge.shape[1])] = merge
 
-            cv2.imshow("frame", frame)
-
-            saveImage(name, frame.copy(), save_path, fld, '')
-            k = cv2.waitKey(1)
-                    
+                cv2.imshow("frame", frame)
+                saveImage(name, frame.copy(), save_path, fld +'\\'+ num, '')
+                k = cv2.waitKey(1)
+                        
+                if k == ord("q"):
+                    break
             if k == ord("q"):
                 break
-        if k == ord("q"):
-            break
 
     print('Terminamo')
 

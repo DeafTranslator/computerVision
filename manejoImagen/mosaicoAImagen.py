@@ -5,18 +5,21 @@ import numpy as np
 import myCV
 from enum import Enum
 
-clase = 'cuanto'
-saveMode = True
-showMode = False
+clase = 'bien'
+saveMode = {'y':True, 'n':False, '':False}[input('save mode? (y, n): ')]
+showMode = {'y':True, 'n':False, '':True}[input('show mode? (y, n): ')]
 stepByStep = 0
 cantHands = 1
 
+print(saveMode)
+print(showMode)
+
 date = '28-1-2018'
 cameraTypes = ["\\LG", "\\SAMSUNG"]
-camera = cameraTypes[1]
+camera = cameraTypes[0]
 
 sources = ["\\Juan", "\\Jesus"]
-who = sources[0]
+who = sources[1]
 
 filterName = 'Laplacian\\'
 
@@ -26,17 +29,21 @@ defURLSave = 'C:\\Users\\jgraciano\\Desktop\\Dataset\\'
 image_path = defURLTrain +'imagenes\\' + date + camera + who + filterName + clase + '\\'
 save_path =  defURLSave + 'imagenes\\'+ date + camera + who + filterName + clase + '_450_450'
 
-# image_path = defURLTrain +'imagenes\\' + date + who + filterName +'\\0\\'+ clase + '\\'
+image_path = defURLTrain +'imagenes\\' + date + camera + who + filterName +'0\\'+ clase + '\\'
 # save_path =  defURLSave + 'imagenes\\'+ date + who + filterName + '\\0\\'+ clase + '_450_450'
+
+# image_path = defURLTrain +'imagenes\\' + date + "\\MosaicoJesusLaplacian\\jesus\\" +  clase + '\\'
+# save_path =  defURLSave + 'imagenes\\'+ date + "\\MosaicoJesusLaplacian\\" + clase + '_450_450'
+
 
 cantClasses = 34
 auxPath = ['450_450', '_', ' ', '']
 classes = []
 
-for i in range(0,cantClasses):
-	classes.append(clase + auxPath[2] + str(cantClasses))
-
 print(image_path)
+
+for i in range(0,cantClasses):
+	classes.append(str(i))
 
 class Fill(Enum):
 	BLACK = 0
@@ -48,7 +55,7 @@ cantCuadritoH = 3
 cuadritoW = int(450/cantCuadritoW)
 cuadritoH = int(450/cantCuadritoH)
 
-llenar = 15
+llenar = 0
 
 k = 0
 
@@ -80,16 +87,6 @@ def sortHands(locations, shades):
 
 def resizeImage(frame, width, height):
 
-	# Adjusting size
-	# if frame.shape[0] > frame.shape[1]:	
-	# 	hy = height/frame.shape[0]
-	# 	hx = frame.shape[1]*hy
-	# 	frame = cv2.resize(frame, (int(hx), int(height)), interpolation = cv2.INTER_CUBIC)
-	# else:
-	# 	hx = width/frame.shape[1]
-	# 	hy = frame.shape[0]*hx
-	# 	frame = cv2.resize(frame, (int(width), int(hy)), interpolation = cv2.INTER_CUBIC)
-	
 	if frame.shape[1] > width:
 		hx = width/frame.shape[1]
 		hy = frame.shape[0]*hx
@@ -152,7 +149,7 @@ def adjustImage(img):
 
 	return newImg
 
-def headShot(shapes, location):
+def getHead(shapes, location):
 	i = 1
 	index = 0 
 	head = []
@@ -193,12 +190,9 @@ def fillContour(img):
 		contours.pop(biggestContour)
 	return frame
 
-def getHandsAndHead(img):
+def getShapes(img):
 	frame = fillContour(img.copy())
 	_, thresh1 = cv2.threshold(frame, 100, 255, cv2.THRESH_BINARY)
-	# if showMode:
-	# 	cv2.imshow("thresh1", thresh1)
-	# 	cv2.waitKey(0)
 	_, contours, hierarchy = cv2.findContours(thresh1, cv2.RETR_LIST, cv2.CHAIN_APPROX_NONE)
 
 	shades = []
@@ -249,50 +243,67 @@ def getHandsAndHead(img):
 def setLocationX(x):
 	x = int(x * cuadritoW * cantCuadritoW)
 
-	if x >= 0 and x < cuadritoW:
-		return 0
-	elif x >= cuadritoW and x < cuadritoW*2: 
-		return 1
-	return 2
+	i = 0
+	while i < cantCuadritoW - 1:
+		if y >= cuadritoW * i and y < cuadritoW * (i+1):
+			return i
+	return cuadritoW - 1
+
+	# if x >= 0 and x < cuadritoW:
+	# 	return 0
+	# if x >= cuadritoW and x < cuadritoW*2: 
+	# 	return 1
+	# return 2 
 
 def setLocationY(y):
 	y = int(y * cuadritoH * cantCuadritoH)
 
-	if y >= 0 and y < cuadritoH: 
-		return 0
-	elif y >= cuadritoH and y < cuadritoH*2: 
-		return 1
-	return 2
+	i = 0
+	while i < cantCuadritoH - 1:
+		if y >= cuadritoH * i and y < cuadritoH * (i+1):
+			return i
+	return cuadritoH - 1
 
-def setLocationXY(x, y, matrix, locations):
-	r, c = setLocationY(y), setLocationX(x)
+	# if y >= 0 and y < cuadritoH: 
+	# 	return 0
+	# if y >= cuadritoH and y < cuadritoH*2: 
+	# 	return 1
+	# return 2
 
-	if matrix[r*cantCuadritoW + c][0] is 1:
-		diffInX = int((x - matrix[r*cantCuadritoW + c][1][0])*1000)
-		diffInX /= (abs(diffInX))
-		diffInX = int(diffInX)
+def setLocationXY(location, matrix, shapes):
 
-		if matrix[r*cantCuadritoW + (c+diffInX)][0] is 1:
-			diffInY = int((y - matrix[r*cantCuadritoW + c][1][1])*1000)
-			diffInY /= int(abs(diffInY))
-			diffInY = int(diffInY)
-			r += diffInY
+	# toma primera posicion de la imagen original
+	r[0], c[0] = setLocationY(location[0][1]), setLocationX(location[0][0])
+	matrix[r[0]*cantCuadritoW + c[0]] = (1, (location[0][0], location[0][1]))
+	diffInX = 0
+	# Guarda posicion en la imagen normalizada 
+	x[0] = (cuadritoW*c, diffInX)
+	y[0] = (cuadritoH*r, 0)
+	# Busqueda de las demas imagenes
+	for i in range(1,len(shapes)):
+		# toma primera posicion de la imagen original
+		r[i], c[i] = setLocationY(location[0][1]), setLocationX(location[0][0])
+		diffInX = 0
+		# Si exite otra imagen en la misma posicion de la imagen actual se ajusta las posiciones de la imagenes
+		if matrix[r[i-1]*cantCuadritoW + c[i-1]][0] is 1:
+			# Busca la relacion de posicion de ambas imagenes (derecha o izquierda)
+			diffInX = int((location[i][0] - matrix[r[i-1]*cantCuadritoW + c[i-1]][1][0])*1000)
+			diffInX /= (abs(diffInX))
+			diffInX = int(diffInX)
+			# Cambia la orientacion de la imagen anterior 
+			x[i-1] = (cuadritoW*c[i-1], diffInX*-1)
+		# Guarda posicion en la nueva imagen normalizada 
+		matrix[r[i]*cantCuadritoW + c[i] + diffInX] = (1, (location[0][0], location[0][1]))
+		x[i] = (cuadritoW*c[i], diffInX)
+		y[i] = (cuadritoH*r[i], 0)
 
-		c += diffInX
-
-	matrix[r*cantCuadritoW + c] = (1, (x, y))
-
-	x = cuadritoW*c
-	y = cuadritoH*r
-
-	return x, y, matrix
+	return x, y
 
 def makeMosaic(img):
 
 	sheri = adjustImage(img.copy())
-	
-	shapes, location = getHandsAndHead(sheri)
-	head, shapes, location = headShot(shapes, location)
+	shapes, location = getShapes(sheri)
+	head, shapes, location = getHead(shapes, location)
 	# location, shapes = sortHands(location, shapes)
 	background = makeBackground(int(cuadritoH*cantCuadritoH), int(cuadritoW*cantCuadritoW), Fill.WHITE.value)
 
@@ -300,18 +311,19 @@ def makeMosaic(img):
 	matrix = [(0, (-1,-1))] * (int(cuadritoW) * int(cuadritoH))
 	matrix[1] = (1, (int(cuadritoW + (cuadritoW/2)), int(cuadritoH/2)))
 
-	for i in range(0,len(shapes)):
+	x, y = setLocationXY(location, matrix, shapes)
+	for i in range(0,len(x0)):
+		x0 = x[i][0]
+		if x[i][1] is not 0:
+			x0 = x[i][0] + cuadritoW * x[i][1]
+		y0 = y[i][0]
+		y1 = y0 + cuadritoH
+		x1 = x0 + cuadritoW
 		shapes[i] = resizeImage(shapes[i], int(cuadritoW), int(cuadritoH))
-		# print(shapes[i].shape)
-		x0, y0 , matrix = setLocationXY(location[i][0], location[i][1], matrix, location)
-		if x0 >= 0 and y0 >= 0:
-			y1 = y0 + cuadritoH
-			x1 = x0 + cuadritoW
-
-			background[int(y0):int(y1), int(x0):int(x1)] = shapes[i]
+		background[int(y0):int(y1), int(x0):int(x1)] = shapes[i]
 
 	# el caco
-	head = myCV.resize(head, cuadritoW, cuadritoH)
+	# head = myCV.resize(head, cuadritoW, cuadritoH)
 	head = np.zeros((int(cuadritoH), int(cuadritoW)))
 	background[int(0):int(cuadritoH), int(cuadritoW):int(cuadritoW*2)] = head
 

@@ -6,6 +6,12 @@ def edgeDetection(gray):
     img_gaussian = cv2.GaussianBlur(gray,(3,3),0)
     # Canny
     # myCanny = cv2.Canny(img_gaussian.copy(), img_gaussian.mean(), 200)
+    # wide  = cv2.Canny(img_gaussian.copy(), 10, 200)
+    # sigma = 0.33
+    # v = np.median(gray)
+    # lower = int(max(0, (1.0 - sigma) * v))
+	# upper = int(min(255, (1.0 + sigma) * v))
+	# myCanny = cv2.Canny(image, lower, upper)
     
     # #Laplacian
     myCanny = cv2.Laplacian(gray.copy(),0)

@@ -802,9 +802,6 @@ def forceSize(frame, height):
         
     return frame
 
-
-    
-
 def normalize(mean, std, isLower):
     if isLower:
          if mean-std < 0:
@@ -813,106 +810,68 @@ def normalize(mean, std, isLower):
     if mean+std > 255:
         return 255 
 
-def averageColors(frame, roiPts):  
+def getAverageColors(frame, roiPts):  
     lower_bounds = []
     upper_bounds = []
 
     for roi in roiPts:
         # Dimensiones de cuadro en la pantalla
-        xmax = int((roi[0] + frame.shape[1]*0.025)-2)
-        ymax = int((roi[1] + frame.shape[0]*0.035)-2)
-        xmin = int((roi[0])+2)
-        ymin = int((roi[1])+2)
+        xmin = int((roi[0]))
+        ymin = int((roi[1]))
+        xmax = int((xmin + frame.shape[1]*setup.diamRoi))
+        ymax = int((ymin + frame.shape[0]*setup.diamRoi))
 
         # Image del cuadro en la pantalla
-        color1 = frame[ymin:ymax, xmin:xmax, 0]
-        color2 = frame[ymin:ymax, xmin:xmax, 1]
-        color3 = frame[ymin:ymax, xmin:xmax, 2]
+        color1 = np.sort(frame[ymin:ymax, xmin:xmax, 0].reshape(-1), kind = "mergesort")
+        color2 = np.sort(frame[ymin:ymax, xmin:xmax, 1].reshape(-1), kind = "mergesort")
+        color3 = np.sort(frame[ymin:ymax, xmin:xmax, 2].reshape(-1), kind = "mergesort")
 
-        # color1 = np.reshape(color1, (1,np.product(color1.shape)))
-        # color2 = np.reshape(color2, (1,np.product(color2.shape)))
-        # color3 = np.reshape(color3, (1,np.product(color3.shape)))
+        meanColor1 = np.mean(color1)
+        meanColor2 = np.mean(color2)
+        meanColor3 = np.mean(color3)
 
-        # Colocar la imagen de NxN dimensiones en una sola dimension N^2
-        color1 = color1.reshape(-1)
-        color2 = color2.reshape(-1)
-        color3 = color3.reshape(-1)
+        stdcolor1 = np.std(color1)
+        stdcolor2 = np.std(color2)
+        stdcolor3 = np.std(color3)
 
-        # Promedio de color para cada canal de la imagen
-        meanColor1 = np.average(color1)
-        meanColor2 = np.average(color2)
-        meanColor3 = np.average(color3)
+        # stdColor1Meno = np.std(color1[:int (len(color1)/2)])
+        # stdColor1Ma = np.std(color1[int (len(color1)/2)+1:])
 
-        # Desviacion estandar de la imagen
-        # if stdColor1 < np.std(color1, ddof=1):
-        stdColor1 = np.std(color1)
-        # if stdColor2 < np.std(color2, ddof=1):
-        stdColor2 = np.std(color2)
-        # if stdColor3 < np.std(color3, ddof=1):
-        stdColor3 = np.std(color3)
+        # stdColor2Meno = np.std(color2[:int (len(color2)/2)])
+        # stdColor2Ma = np.std(color2[int (len(color2)/2)+1:])
 
-        # maxColor1 = np.amax(color1)
-        # maxColor2 = np.amax(color2)
-        # maxColor3 = np.amax(color3)
+        # stdColor3Meno = np.std(color3[:int (len(color3)/2)])
+        # stdColor3Ma = np.std(color3[int (len(color3)/2)+1:])
 
-        # minColor1 = np.amin(color1)
-        # minColor2 = np.amin(color2)
-        # minColor3 = np.amin(color3)
+        # lower_bounds.append([int(meanColor1-(stdColor1Meno)), int(meanColor2-(stdColor2Meno)), int(meanColor3-(stdColor3Meno))])
+        # upper_bounds.append([int(meanColor1+(stdColor1Ma)), int(meanColor2+(stdColor2Ma)), int(meanColor3+(stdColor3Ma))])
 
-        lower_bounds.append([int(meanColor1-(stdColor1)), int(meanColor2-(stdColor2)), int(meanColor3-(stdColor3))])
-        upper_bounds.append([int(meanColor1+(stdColor1)), int(meanColor2+(stdColor2)), int(meanColor3+(stdColor3))])
-
-        # lower_bounds.append([int(minColor1), int(minColor2), int(minColor3)])
-        # upper_bounds.append([int(maxColor1), int(maxColor2), int(maxColor3)])
+        lower_bounds.append([int(meanColor1-(stdcolor1)), int(meanColor2-(stdcolor2)), int(meanColor3-(stdcolor3))])
+        upper_bounds.append([int(meanColor1+(stdcolor1)), int(meanColor2+(stdcolor2)), int(meanColor3+(stdcolor3))])
 
     return (lower_bounds, upper_bounds)
 
-def boundsColor(frame, roiPts):
-    lowerBound, upperBound = averageColors(frame, roiPts)
-    return (lowerBound, upperBound)
-
 def mergeColorsImage(frame, lowerBound, upperBound):
-    i = 0 
-    output = []
-    numIterations = len(lowerBound)
-    numElements = len(lowerBound[0])
-    promLower = 0
-    promUpper = 0
-    while i < numIterations:
-        j = 0
-        mask = output 
-        while j < numElements:
-            if i == 0:
-                mask = cv2.inRange(frame, lowerBound[i][j], upperBound[i][j])
-                promLower= lowerBound[i][j]
-                promUpper = upperBound[i][j]
-            else:
-                # print(promLower-lowerBound[i][j])
-                promLower = (promLower + lowerBound[i][j])/2
-                promUpper = (promLower + upperBound[i][j])/2
-                mask += cv2.inRange(frame, lowerBound[i][j], upperBound[i][j])
-            output = mask 
-
-            j += 1
-        i += 1
-    # lower = np.array([5.9, 69.6, 84.9], dtype = "uint8")
-    # upper = np.array([7.9, 113.8, 125.4], dtype = "uint8")
-    # output = cv2.inRange(frame, lower, upper)
-    # return output, [5.9, 69.6, 84.9], [7.9, 113.8, 125.4]
-    return output, promLower, promUpper
+    output = cv2.inRange(frame, lowerBound[0][0], upperBound[0][0])
+    for i in range(1, len(lowerBound)):
+        for j in range(1, len(lowerBound[0])):
+            output += cv2.inRange(frame, lowerBound[i][j], upperBound[i][j])
+    return output
 
 def drawRectangle(frame, roiPts):
     i = 0
     cantPoint = setup.cantPoint
-    # font de la letra
+    yRoi = int(frame.shape[0]*setup.diamRoi)
+    xRoi = int(frame.shape[1]*setup.diamRoi)
+
     font = cv2.FONT_HERSHEY_SIMPLEX
     if len(roiPts) > len(roiPts)-1:
         # Poner texto en la pantalla
         cv2.putText(frame, 'Press D',(int(frame.shape[1]*setup.wdTxt), int(frame.shape[0]*setup.hiTxt)), setup.font, setup.sizThk,(0,255,0),3)
         # Colocar los cuadros en la pantalla para captua de colores
         while(i < len(roiPts)):
-            xmax = roiPts[i][0] + frame.shape[1]*setup.diamRoi
-            ymax = roiPts[i][1] + frame.shape[0]*setup.diamRoi
+            xmax = roiPts[i][0] + xRoi
+            ymax = roiPts[i][1] + yRoi
             cv2.rectangle(frame, roiPts[i], (int(xmax), int(ymax)), (0,255,0),2)
             i += 1
 
