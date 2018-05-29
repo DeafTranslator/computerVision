@@ -183,7 +183,7 @@ def loadVideo(video, fld, namePath):
               #   Smoothing dilatedTracking
               smoothTracking = smoothing(setup.smoothingFilters.MEDIAN, dilatedTracking,setup.valueBlur[0])
               smoothTracking = smoothing(setup.smoothingFilters.MEDIAN, smoothTracking, 7)
-              smoothTracking = getHandsAndHead(smoothTracking)
+              smoothTracking = getHandsAndHead(smoothTracking) # Se puede mejorar, se esta haciendo lo mismo mas adelante
 
               #   Calculates the per-element bit-wise conjunction of two arrays or an array and a scalar.
               bitwiseResult = setup.cv2.bitwise_and(frame, frame, mask = smoothTracking)
@@ -192,7 +192,7 @@ def loadVideo(video, fld, namePath):
               
               # cortando los contornos
               #   shades, list of images
-              shadesRGB = crp.cropContour(frame, smoothTracking, name , cant = setup.hands)
+              shadesRGB = crp.cropContour(frame, smoothTracking, name , cant = setup.hands) # Revisar si se puede hacer con la imagen en gris
               
               # Thresholding: white shapes, black background
               # Update grayImage with cover face
@@ -207,7 +207,7 @@ def loadVideo(video, fld, namePath):
               finalResult = wbInv[1] + edgeDetectionImg
 
               # Blur detection
-              bld.blurDetection(shadesRGB, frame, name, finalResult, fld, namePath)
+              bld.blurDetection(shadesRGB, frame, name, finalResult, fld, namePath) # Revisar si se puede hacer con la imagen en gris
 
               if setup.saveMode is False:
                 setup.cv2.imshow("finalResult",finalResult)

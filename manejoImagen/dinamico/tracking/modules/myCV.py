@@ -822,6 +822,7 @@ def getAverageColors(frame, roiPts):
         ymax = int((ymin + frame.shape[0]*setup.diamRoi))
 
         # Image del cuadro en la pantalla
+        # No es necesario ordenarlo
         color1 = np.sort(frame[ymin:ymax, xmin:xmax, 0].reshape(-1), kind = "mergesort")
         color2 = np.sort(frame[ymin:ymax, xmin:xmax, 1].reshape(-1), kind = "mergesort")
         color3 = np.sort(frame[ymin:ymax, xmin:xmax, 2].reshape(-1), kind = "mergesort")
@@ -833,18 +834,6 @@ def getAverageColors(frame, roiPts):
         stdcolor1 = np.std(color1)
         stdcolor2 = np.std(color2)
         stdcolor3 = np.std(color3)
-
-        # stdColor1Meno = np.std(color1[:int (len(color1)/2)])
-        # stdColor1Ma = np.std(color1[int (len(color1)/2)+1:])
-
-        # stdColor2Meno = np.std(color2[:int (len(color2)/2)])
-        # stdColor2Ma = np.std(color2[int (len(color2)/2)+1:])
-
-        # stdColor3Meno = np.std(color3[:int (len(color3)/2)])
-        # stdColor3Ma = np.std(color3[int (len(color3)/2)+1:])
-
-        # lower_bounds.append([int(meanColor1-(stdColor1Meno)), int(meanColor2-(stdColor2Meno)), int(meanColor3-(stdColor3Meno))])
-        # upper_bounds.append([int(meanColor1+(stdColor1Ma)), int(meanColor2+(stdColor2Ma)), int(meanColor3+(stdColor3Ma))])
 
         lower_bounds.append([int(meanColor1-(stdcolor1)), int(meanColor2-(stdcolor2)), int(meanColor3-(stdcolor3))])
         upper_bounds.append([int(meanColor1+(stdcolor1)), int(meanColor2+(stdcolor2)), int(meanColor3+(stdcolor3))])

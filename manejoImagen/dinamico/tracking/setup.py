@@ -20,11 +20,11 @@ train_path = defURLTrain +'imagenes\\' + date
 video_path = defURLTrain+ 'videos\\2018\\'+ date + camera + who
 save_path =  defURLSave + 'imagenes\\'+ date + camera + who + filterName
 
-classesDinamic = ['adios']
+classesDinamic = ['tu']
 classes = classesDinamic
 	
 # SAVE MODE
-saveMode = True
+saveMode = False
 
 # cant ROI
 cantPoint = 10
@@ -32,8 +32,8 @@ cantPoint = 10
 # Bien
 roiPts = []
 
-# 10 para "adios" SAMSUNG JUAN 0.024
-roiPts = [(113, 98), (97, 126), (122, 129), (90, 159), (118, 164), (90, 187), (102, 206), (235, 36), (260, 32), (283, 99)]
+# 10 para "tu" SAMSUNG JUAN 0.024
+# roiPts = [(113, 98), (97, 126), (122, 129), (90, 159), (118, 164), (90, 187), (102, 206), (235, 36), (260, 32), (283, 99)]
 
 # ROI measure (LO CUADRITO PA COGER LO COLORE)
 diamRoi = 0.024 
